@@ -28,7 +28,7 @@ export default function HomeScreen() {
     const query = search.toLowerCase();
     return celebrities.filter(c => 
       c.name.toLowerCase().includes(query) || 
-      c.description.toLowerCase().includes(query)
+      c.occupation.toLowerCase().includes(query)
     );
   }, [search, celebrities]);
 

@@ -199,7 +199,7 @@ export default function DetailScreen() {
 
             <RNView style={styles.bioSection}>
               <Text style={[styles.label, { color: dimColor, fontFamily: SERIF_FONT }]}>BIO</Text>
-              <Text style={[styles.bioText, { color: textColor, fontFamily: SERIF_FONT }]}>{celebrity.description}</Text>
+              <Text style={[styles.bioText, { color: textColor, fontFamily: SERIF_FONT }]}>{celebrity.occupation}</Text>
             </RNView>
 
             {isDead && (

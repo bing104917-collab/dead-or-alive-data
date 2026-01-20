@@ -20,16 +20,16 @@ export interface Celebrity {
   birthDate: string;
   deathDate: string | null;
   image: string | null;
-  description: string;
+  occupation: string;
 }
 
-const CACHE_KEY = 'celebrity_data_cache_v2';
+const CACHE_KEY = 'celebrity_data_v3';
 // 使用 GitHub Raw 地址以避免 CDN 延遲
 const API_URL = 'https://raw.githubusercontent.com/bing104917-collab/dead-or-alive-data/main/data/celebrities.json';
 
 export const useCelebrityData = () => {
   const [data, setData] = useState<Celebrity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -37,7 +37,7 @@ export const useCelebrityData = () => {
 
   const loadData = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       
       // --- 強制清除舊緩存 (防止 App 記住舊的 3 人名單) ---
       // 只要成功抓到一次新數據，之後可以把這行註釋掉
@@ -59,7 +59,7 @@ export const useCelebrityData = () => {
           birthDate: item.b,
           deathDate: item.d || null,
           image: item.i || null,
-          description: item.o || 'No description',
+          occupation: item.o || 'Unknown',
         }));
 
         console.log(`✅ Success! Loaded ${mappedData.length} celebrities.`);
@@ -76,9 +76,9 @@ export const useCelebrityData = () => {
         setData(JSON.parse(cached));
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  return { data, loading, refetch: loadData };
+  return { data, isLoading, refetch: loadData };
 };
