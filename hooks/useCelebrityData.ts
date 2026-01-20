@@ -2,10 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Celebrity, CelebrityStatus } from '@/data/celebrities';
 
-const DATA_KEY = 'local_celebrity_data';
-const GITHUB_USERNAME = 'shijie';
-const REPO_NAME = 'ikide';
-const CDN_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_USERNAME}/${REPO_NAME}@main/data/celebrities.json`;
+const DATA_KEY = 'celebrities_cache';
+const CDN_URL = 'https://cdn.jsdelivr.net/gh/bing104917-collab/dead-or-alive-data@main/data/celebrities.json';
 
 interface MinimizedCelebrity {
   id: string;
@@ -48,6 +46,7 @@ export function useCelebrityData() {
       const response = await fetch(CDN_URL);
       if (response.ok) {
         const remoteData: MinimizedCelebrity[] = await response.json();
+        console.log('Fetched live data sample:', remoteData.slice(0, 2));
         
         // 3. Compare and update if different
         const remoteJson = JSON.stringify(remoteData);

@@ -79,23 +79,37 @@ export default function DetailScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, []);
 
-  if (!celebrity) {
+  const isDead = celebrity?.status === 'dead';
+  
+  const statusPhrase = useMemo(() => {
+    if (!celebrity) return '';
+    return isDead ? getDeadStatus() : getAliveStatus();
+  }, [isDead, celebrity]);
+
+  const lifePercentage = useMemo(() => {
+    if (!celebrity) return 0;
+    return calculateLifeProgress(celebrity.birthDate, celebrity.deathDate);
+  }, [celebrity]);
+
+  if (isLoading) {
     return (
-      <View style={styles.container}>
-        <Text style={{ fontFamily: SERIF_FONT }}>Not Found</Text>
-      </View>
+      <SafeAreaView style={styles.container}>
+        <RNView style={styles.centerContent}>
+          <Text style={styles.loadingText}>LOADING...</Text>
+        </RNView>
+      </SafeAreaView>
     );
   }
 
-  const isDead = celebrity.status === 'dead';
-  
-  const statusPhrase = useMemo(() => {
-    return isDead ? getDeadStatus() : getAliveStatus();
-  }, [isDead]);
-
-  const lifePercentage = useMemo(() => {
-    return calculateLifeProgress(celebrity.birthDate, celebrity.deathDate);
-  }, [celebrity.birthDate, celebrity.deathDate]);
+  if (!celebrity) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <RNView style={styles.centerContent}>
+          <Text style={styles.notFoundText}>NOT FOUND</Text>
+        </RNView>
+      </SafeAreaView>
+    );
+  }
 
   const survivalLabel = getSurvivalLabel(celebrity.status, celebrity.birthDate, celebrity.deathDate);
   const daysLived = isDead && celebrity.deathDate ? calculateDaysBetween(celebrity.birthDate, celebrity.deathDate) : 0;

@@ -48,7 +48,11 @@ export default function HomeScreen() {
         />
       </RNView>
 
-      {isMirrorTriggered ? (
+      {isLoading && !celebrities.length ? (
+        <RNView style={styles.loadingState}>
+          <Text style={styles.loadingText}>LOADING...</Text>
+        </RNView>
+      ) : isMirrorTriggered ? (
         <MirrorView />
       ) : (
         <FlatList
