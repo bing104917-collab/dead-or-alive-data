@@ -1,9 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Celebrity, CelebrityStatus } from '@/data/celebrities';
 
 const DATA_KEY = 'celebrities_cache';
-const CDN_URL = 'https://cdn.jsdelivr.net/gh/bing104917-collab/dead-or-alive-data@main/data/celebrities.json';
+
+const DATA_URLS = [
+  // Primary: Standard jsDelivr (Best global performance)
+  'https://cdn.jsdelivr.net/gh/bing104917-collab/dead-or-alive-data@main/data/celebrities.json',
+  
+  // Backup 1: Fastly CDN (Often works better in some regions)
+  'https://fastly.jsdelivr.net/gh/bing104917-collab/dead-or-alive-data@main/data/celebrities.json',
+
+  // Backup 2: Statically (Alternative free CDN for GitHub)
+  'https://cdn.statically.io/gh/bing104917-collab/dead-or-alive-data/main/data/celebrities.json'
+];
 
 interface MinimizedCelebrity {
   id: string;
@@ -19,6 +30,17 @@ export function useCelebrityData() {
   const [data, setData] = useState<Celebrity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const showOfflineToast = useCallback(() => {
+    const message = "Using offline records.";
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else if (Platform.OS === 'ios' || Platform.OS === 'web') {
+      // For iOS and Web, we use a simple Alert or just log it
+      // since iOS doesn't have a native Toast like Android
+      console.log(message);
+    }
+  }, []);
+
   const mapData = useCallback((minData: MinimizedCelebrity[]): Celebrity[] => {
     return minData.map(item => ({
       id: item.id,
@@ -32,36 +54,67 @@ export function useCelebrityData() {
     }));
   }, []);
 
+  const fetchWithFallback = useCallback(async (): Promise<MinimizedCelebrity[] | null> => {
+    for (const url of DATA_URLS) {
+      try {
+        console.log(`Attempting to fetch from: ${url}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per URL
+
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const remoteData = await response.json();
+          console.log(`Successfully fetched from: ${url}`);
+          return remoteData;
+        }
+        console.warn(`Failed to fetch from ${url}: Status ${response.status}`);
+      } catch (error) {
+        console.warn(`Failed to fetch from ${url}:`, error);
+      }
+    }
+    return null;
+  }, []);
+
   const loadData = useCallback(async () => {
     try {
-      // 1. Load from AsyncStorage
+      // 1. Load from AsyncStorage first for immediate UI
       const cached = await AsyncStorage.getItem(DATA_KEY);
+      let initialDataLoaded = false;
+      
       if (cached) {
         const parsed = JSON.parse(cached);
         setData(mapData(parsed));
         setIsLoading(false);
+        initialDataLoaded = true;
       }
 
-      // 2. Fetch from jsDelivr in background
-      const response = await fetch(CDN_URL);
-      if (response.ok) {
-        const remoteData: MinimizedCelebrity[] = await response.json();
-        console.log('Fetched live data sample:', remoteData.slice(0, 2));
-        
-        // 3. Compare and update if different
+      // 2. Fetch from CDNs with fallback strategy
+      const remoteData = await fetchWithFallback();
+      
+      if (remoteData) {
         const remoteJson = JSON.stringify(remoteData);
         if (remoteJson !== cached) {
           await AsyncStorage.setItem(DATA_KEY, remoteJson);
           setData(mapData(remoteData));
         }
+      } else if (!initialDataLoaded) {
+        // Only show offline toast if we couldn't load from cache initially 
+        // OR if we tried to fetch and everything failed.
+        // If we have cache, we still show it, but notify user it's offline.
+        showOfflineToast();
+      } else {
+        // We have cache, but sync failed
+        showOfflineToast();
       }
     } catch (error) {
-      // Silent fail - user continues with cached data or empty state
-      console.log('Fetch error:', error);
+      console.log('Load error:', error);
+      showOfflineToast();
     } finally {
       setIsLoading(false);
     }
-  }, [mapData]);
+  }, [mapData, fetchWithFallback, showOfflineToast]);
 
   useEffect(() => {
     loadData();
