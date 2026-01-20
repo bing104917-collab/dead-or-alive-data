@@ -12,12 +12,12 @@ const SERIF_FONT = Platform.select({
 export function MirrorView() {
   const today = useMemo(() => {
     const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
       year: 'numeric', 
       month: 'long', 
-      day: 'numeric' 
+      day: 'numeric',
+      weekday: 'long',
     };
-    return new Date().toLocaleDateString('en-US', options);
+    return new Date().toLocaleDateString('zh-CN', options);
   }, []);
 
   const handleGoLive = () => {
@@ -25,29 +25,27 @@ export function MirrorView() {
     
     if (Platform.OS === 'web') {
       Alert.alert(
-        "Goodbye",
-        "The world is waiting for you. Put the phone down and go live.",
-        [{ text: "OK" }]
+        "歸去",
+        "世界正在門外守候。放下螢幕，去生活吧。",
+        [{ text: "好" }]
       );
     } else {
       Alert.alert(
-        "Go Live",
-        "The story is outside. Are you ready to continue writing yours?",
+        "重返現實",
+        "故事還在繼續。你準備好去書寫自己的篇章了嗎？",
         [
           {
-            text: "STAY",
+            text: "停留",
             style: "cancel"
           },
           { 
-            text: "GO LIVE", 
+            text: "出發", 
             style: "destructive",
             onPress: () => {
-              // On Android we can exit the app, on iOS we just show a message 
-              // as Apple doesn't allow programmatic exit easily
               if (Platform.OS === 'android') {
                 BackHandler.exitApp();
               } else {
-                Alert.alert("Goodbye", "Put your phone down. We'll be here when you're done.");
+                Alert.alert("再見", "放下手機，去感受此刻。我們會在這裡等你歸來。");
               }
             }
           }
@@ -59,15 +57,15 @@ export function MirrorView() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>THE STORY IS STILL BEING WRITTEN.</Text>
+        <Text style={styles.title}>生 命 之 書，仍 在 續 寫</Text>
         
         <View style={styles.giftContainer}>
-          <Text style={styles.giftLabel}>TODAY IS A GIFT</Text>
-          <Text style={styles.dateText}>{today.toUpperCase()}</Text>
+          <Text style={styles.giftLabel}>今 日 是 一 份 饋 贈</Text>
+          <Text style={styles.dateText}>{today}</Text>
         </View>
 
         <Text style={styles.quote}>
-          "Life is what happens while you're busy making other plans."
+          「生命，就是在你忙著制定其他計畫時，悄然發生的一切。」
         </Text>
       </View>
 
@@ -78,7 +76,7 @@ export function MirrorView() {
           { opacity: pressed ? 0.6 : 1 }
         ]}
       >
-        <Text style={styles.buttonText}>GO LIVE</Text>
+        <Text style={styles.buttonText}>重 返 現 實</Text>
       </Pressable>
     </View>
   );
@@ -89,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 40,
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F5F0',
   },
   content: {
     flex: 1,
@@ -98,51 +96,53 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   title: {
-    fontSize: 42,
-    fontWeight: '900',
+    fontSize: 28,
+    fontWeight: '300',
     textAlign: 'center',
     fontFamily: SERIF_FONT,
-    letterSpacing: -1,
+    letterSpacing: 4,
     lineHeight: 48,
-    marginBottom: 40,
+    marginBottom: 60,
+    color: '#121212',
   },
   giftContainer: {
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   giftLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 4,
-    color: '#888',
-    marginBottom: 8,
+    fontSize: 12,
+    letterSpacing: 6,
+    color: 'rgba(18, 18, 18, 0.4)',
+    marginBottom: 12,
     fontFamily: SERIF_FONT,
   },
   dateText: {
     fontSize: 18,
-    fontWeight: '900',
     fontFamily: SERIF_FONT,
+    color: '#121212',
+    letterSpacing: 1,
   },
   quote: {
     fontSize: 16,
-    fontStyle: 'italic',
     textAlign: 'center',
-    marginTop: 60,
-    opacity: 0.6,
-    lineHeight: 24,
+    marginTop: 80,
+    opacity: 0.5,
+    lineHeight: 28,
     fontFamily: SERIF_FONT,
+    color: '#121212',
+    paddingHorizontal: 20,
   },
   button: {
-    borderWidth: 4,
-    borderColor: '#000',
-    paddingVertical: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(18, 18, 18, 0.2)',
+    paddingVertical: 16,
     alignItems: 'center',
     borderRadius: 0,
   },
   buttonText: {
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: 2,
+    fontSize: 16,
+    letterSpacing: 4,
     fontFamily: SERIF_FONT,
+    color: '#121212',
   },
 });

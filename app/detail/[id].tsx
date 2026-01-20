@@ -1,19 +1,11 @@
-import React, { useMemo, useEffect, useCallback, useRef, useState } from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, Platform, View as RNView, Pressable } from 'react-native';
+import React, { useMemo, useState, useCallback } from 'react';
+import { StyleSheet, SafeAreaView, ScrollView, Platform, View as RNView, Pressable, Image } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withRepeat, 
-  withTiming, 
-  Easing 
-} from 'react-native-reanimated';
-import { Text, View } from '@/components/Themed';
+import { Text } from '@/components/Themed';
 import { useCelebrityData } from '@/hooks/useCelebrityData';
-import { getAliveStatus, getDeadStatus, getSurvivalLabel, calculateDaysBetween, getLegacyQuote, calculateLifeProgress } from '@/utils/statusHelpers';
-import { LivingClock } from '@/components/LivingClock';
-import { LifeProgressBar } from '@/components/LifeProgressBar';
+import { getAliveStatus, getDeadStatus, getLegacyQuote } from '@/utils/statusHelpers';
+import { Ionicons } from '@expo/vector-icons';
 
 const SERIF_FONT = Platform.select({
   ios: 'Georgia',
@@ -26,57 +18,12 @@ export default function DetailScreen() {
   const { data: celebrities, isLoading } = useCelebrityData();
   const celebrity = useMemo(() => celebrities.find(c => c.id === id), [celebrities, id]);
   
-  const hapticIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [legacyQuote, setLegacyQuote] = useState<string | null>(null);
-
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    if (celebrity?.status === 'alive') {
-      scale.value = withRepeat(
-        withTiming(1.02, {
-          duration: 3000,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        -1,
-        true
-      );
-    } else {
-      scale.value = 1;
-    }
-  }, [celebrity?.status]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    flex: 1,
-  }));
-
-  const triggerHeartbeat = useCallback(async () => {
-    // Heartbeat pattern: thump-thump... pause
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setTimeout(async () => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }, 150);
-  }, []);
-
-  const handleLongPress = useCallback(() => {
-    if (celebrity?.status === 'alive') {
-      triggerHeartbeat();
-      hapticIntervalRef.current = setInterval(triggerHeartbeat, 1000);
-    }
-  }, [celebrity?.status, triggerHeartbeat]);
-
-  const handlePressOut = useCallback(() => {
-    if (hapticIntervalRef.current) {
-      clearInterval(hapticIntervalRef.current);
-      hapticIntervalRef.current = null;
-    }
-  }, []);
 
   const handleReadLegacy = useCallback(() => {
     const quote = getLegacyQuote();
     setLegacyQuote(quote);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
   const isDead = celebrity?.status === 'dead';
@@ -86,16 +33,21 @@ export default function DetailScreen() {
     return isDead ? getDeadStatus() : getAliveStatus();
   }, [isDead, celebrity]);
 
-  const lifePercentage = useMemo(() => {
-    if (!celebrity) return 0;
-    return calculateLifeProgress(celebrity.birthDate, celebrity.deathDate);
-  }, [celebrity]);
+  const timeline = useMemo(() => {
+    if (!celebrity) return '';
+    const birthYear = new Date(celebrity.birthDate).getFullYear();
+    if (isDead && celebrity.deathDate) {
+      const deathYear = new Date(celebrity.deathDate).getFullYear();
+      return `${birthYear} — ${deathYear}`;
+    }
+    return `${birthYear} — Present`;
+  }, [celebrity, isDead]);
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <RNView style={styles.centerContent}>
-          <Text style={styles.loadingText}>LOADING...</Text>
+          <Text style={styles.loadingText}>靜候時間的低語...</Text>
         </RNView>
       </SafeAreaView>
     );
@@ -105,126 +57,100 @@ export default function DetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <RNView style={styles.centerContent}>
-          <Text style={styles.notFoundText}>NOT FOUND</Text>
+          <Text style={styles.notFoundText}>此人已消逝在時光中</Text>
         </RNView>
       </SafeAreaView>
     );
   }
 
-  const survivalLabel = getSurvivalLabel(celebrity.status, celebrity.birthDate, celebrity.deathDate);
-  const daysLived = isDead && celebrity.deathDate ? calculateDaysBetween(celebrity.birthDate, celebrity.deathDate) : 0;
-
-  const bgColor = isDead ? '#1a1a1a' : '#FFFFFF';
-  const textColor = isDead ? '#888888' : '#000000';
-  const dimColor = isDead ? '#555555' : '#666666';
+  const textColor = isDead ? '#A0A09A' : '#121212';
+  const dimColor = 'rgba(18, 18, 18, 0.4)';
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ 
         title: '', 
         headerTransparent: true,
-        headerTintColor: textColor 
+        headerTintColor: '#121212' 
       }} />
       
-      <Pressable 
-        onLongPress={handleLongPress}
-        onPressOut={handlePressOut}
-        style={{ flex: 1 }}
-        disabled={isDead}
-      >
-        <Animated.View style={animatedStyle}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <RNView style={styles.header}>
-              <Text style={[
-                styles.name, 
-                { color: textColor, fontFamily: SERIF_FONT },
-                isDead && styles.textLineThrough
-              ]}>
-                {celebrity.name.toUpperCase()}
-              </Text>
-
-              <RNView style={styles.progressContainer}>
-                <LifeProgressBar percentage={lifePercentage} isDead={isDead} />
-              </RNView>
-              
-              <RNView style={[
-                styles.statusBadge, 
-                { borderColor: isDead ? '#555' : '#00FF00' }
-              ]}>
-                <Text style={[
-                  styles.statusText, 
-                  { color: isDead ? '#555' : '#00FF00', fontFamily: SERIF_FONT }
-                ]}>
-                  {statusPhrase.toUpperCase()}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <RNView style={styles.header}>
+          {/* Image Placeholder or Image */}
+          <RNView style={styles.imageContainer}>
+            {celebrity.image ? (
+              <Image source={{ uri: celebrity.image }} style={styles.profileImage} />
+            ) : (
+              <RNView style={styles.placeholderImage}>
+                <Text style={styles.placeholderText}>
+                  {celebrity.name.charAt(0).toUpperCase()}
                 </Text>
               </RNView>
-
-              {!isDead ? (
-                <LivingClock birthDate={celebrity.birthDate} color={textColor} />
-              ) : (
-                <RNView style={styles.summaryContainer}>
-                  <Text style={[styles.survivalTime, { color: dimColor, fontFamily: SERIF_FONT }]}>
-                    {survivalLabel.toUpperCase()}
-                  </Text>
-                  <RNView style={styles.finalStats}>
-                    <Text style={[styles.statLine, { color: textColor, fontFamily: SERIF_FONT }]}>
-                      TOTAL TIME ON EARTH: {daysLived.toLocaleString()} DAYS
-                    </Text>
-                    <Text style={[styles.statSubLine, { color: dimColor, fontFamily: SERIF_FONT }]}>
-                      THAT'S ROUGHLY {daysLived.toLocaleString()} SUNRISES.
-                    </Text>
-                  </RNView>
-                </RNView>
-              )}
-            </RNView>
-
-            <RNView style={styles.infoSection}>
-              <RNView style={[styles.infoRow, { borderBottomColor: isDead ? '#333' : '#eee' }]}>
-                <Text style={[styles.label, { color: dimColor, fontFamily: SERIF_FONT }]}>OCCUPATION</Text>
-                <Text style={[styles.value, { color: textColor, fontFamily: SERIF_FONT }]}>{celebrity.occupation.toUpperCase()}</Text>
-              </RNView>
-
-              <RNView style={[styles.infoRow, { borderBottomColor: isDead ? '#333' : '#eee' }]}>
-                <Text style={[styles.label, { color: dimColor, fontFamily: SERIF_FONT }]}>BORN</Text>
-                <Text style={[styles.value, { color: textColor, fontFamily: SERIF_FONT }]}>{celebrity.birthDate}</Text>
-              </RNView>
-
-              {isDead && (
-                <RNView style={[styles.infoRow, { borderBottomColor: isDead ? '#333' : '#eee' }]}>
-                  <Text style={[styles.label, { color: dimColor, fontFamily: SERIF_FONT }]}>DIED</Text>
-                  <Text style={[styles.value, { color: textColor, fontFamily: SERIF_FONT }]}>{celebrity.deathDate}</Text>
-                </RNView>
-              )}
-            </RNView>
-
-            <RNView style={styles.bioSection}>
-              <Text style={[styles.label, { color: dimColor, fontFamily: SERIF_FONT }]}>BIO</Text>
-              <Text style={[styles.bioText, { color: textColor, fontFamily: SERIF_FONT }]}>{celebrity.occupation}</Text>
-            </RNView>
-
-            {isDead && (
-              <RNView style={styles.legacySection}>
-                {legacyQuote && (
-                  <Text style={[styles.quoteText, { color: textColor, fontFamily: SERIF_FONT }]}>
-                    "{legacyQuote}"
-                  </Text>
-                )}
-                <Pressable 
-                  onPress={handleReadLegacy}
-                  style={({ pressed }) => [
-                    styles.legacyButton,
-                    { borderColor: textColor, opacity: pressed ? 0.6 : 1 }
-                  ]}
-                >
-                  <Text style={[styles.legacyButtonText, { color: textColor, fontFamily: SERIF_FONT }]}>
-                    READ LEGACY
-                  </Text>
-                </Pressable>
-              </RNView>
             )}
-          </ScrollView>
-        </Animated.View>
-      </Pressable>
+          </RNView>
+
+          {/* Status Icon */}
+          <RNView style={styles.statusIconContainer}>
+            {isDead ? (
+              <Ionicons name="leaf-outline" size={20} color="#A0A09A" />
+            ) : (
+              <Ionicons name="flame-outline" size={20} color="#121212" />
+            )}
+          </RNView>
+
+          <Text style={[
+            styles.name, 
+            { color: textColor, fontFamily: SERIF_FONT }
+          ]}>
+            {celebrity.name}
+          </Text>
+
+          <Text style={[styles.timeline, { color: dimColor, fontFamily: SERIF_FONT }]}>
+            {timeline}
+          </Text>
+
+          <Text style={[
+            styles.statusLabel, 
+            { color: isDead ? '#A0A09A' : '#121212', fontFamily: SERIF_FONT }
+          ]}>
+            {statusPhrase}
+          </Text>
+        </RNView>
+
+        <RNView style={styles.contentSection}>
+          <Text style={[styles.bioText, { color: '#121212', fontFamily: SERIF_FONT }]}>
+            {celebrity.occupation}
+          </Text>
+          
+          <RNView style={styles.divider} />
+          
+          <Text style={[styles.description, { color: 'rgba(18, 18, 18, 0.7)', fontFamily: SERIF_FONT }]}>
+            每一段生命都是時間長河中的一朵浪花，在這裡，我們銘記曾經或正在閃爍的光芒。
+          </Text>
+        </RNView>
+
+        <RNView style={styles.legacySection}>
+          {legacyQuote ? (
+            <RNView style={styles.quoteContainer}>
+              <Text style={[styles.quoteText, { color: '#121212', fontFamily: SERIF_FONT }]}>
+                「{legacyQuote}」
+              </Text>
+            </RNView>
+          ) : (
+            <Pressable 
+              onPress={handleReadLegacy}
+              style={({ pressed }) => [
+                styles.legacyLink,
+                { opacity: pressed ? 0.6 : 1 }
+              ]}
+            >
+              <Text style={[styles.legacyLinkText, { fontFamily: SERIF_FONT }]}>
+                探尋生命留下的迴響 →
+              </Text>
+            </Pressable>
+          )}
+        </RNView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -232,130 +158,132 @@ export default function DetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F5F5F0',
   },
   scrollContent: {
-    padding: 24,
-    paddingTop: 80,
+    padding: 32,
+    paddingTop: 100,
+    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 60,
+    width: '100%',
+  },
+  imageContainer: {
+    marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  placeholderImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(18, 18, 18, 0.03)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(18, 18, 18, 0.05)',
+  },
+  placeholderText: {
+    fontSize: 40,
+    fontFamily: SERIF_FONT,
+    color: 'rgba(18, 18, 18, 0.2)',
+  },
+  statusIconContainer: {
+    marginBottom: 12,
   },
   name: {
-    fontSize: 48,
-    fontWeight: '900',
+    fontSize: 36,
+    fontWeight: '500',
     textAlign: 'center',
-    letterSpacing: -1,
-    lineHeight: 56,
+    letterSpacing: 1,
+    lineHeight: 44,
+    marginBottom: 12,
   },
-  progressContainer: {
-    width: '60%',
-    marginTop: 12,
+  timeline: {
+    fontSize: 16,
+    letterSpacing: 2,
+    marginBottom: 12,
   },
-  textLineThrough: {
-    textDecorationLine: 'line-through',
-  },
-  statusBadge: {
-    marginTop: 24,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 0,
-    borderWidth: 3,
-  },
-  statusText: {
-    fontSize: 26,
-    fontWeight: '900',
+  statusLabel: {
+    fontSize: 14,
     letterSpacing: 4,
+    opacity: 0.8,
   },
-  survivalTime: {
-    marginTop: 16,
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  summaryContainer: {
+  contentSection: {
+    width: '100%',
     alignItems: 'center',
-  },
-  finalStats: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  statLine: {
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  statSubLine: {
-    fontSize: 14,
-    marginTop: 4,
-    fontStyle: 'italic',
-  },
-  infoSection: {
-    marginBottom: 40,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  bioSection: {
+    marginBottom: 60,
   },
   bioText: {
-    fontSize: 18,
-    lineHeight: 28,
-    marginTop: 12,
-    opacity: 0.9,
+    fontSize: 20,
+    textAlign: 'center',
+    lineHeight: 32,
     fontStyle: 'italic',
+    marginBottom: 24,
+  },
+  divider: {
+    width: 40,
+    height: 1,
+    backgroundColor: 'rgba(18, 18, 18, 0.1)',
+    marginBottom: 24,
+  },
+  description: {
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 26,
+    paddingHorizontal: 20,
   },
   legacySection: {
-    marginTop: 60,
-    marginBottom: 40,
+    width: '100%',
     alignItems: 'center',
+    paddingBottom: 40,
+  },
+  quoteContainer: {
+    paddingHorizontal: 24,
   },
   quoteText: {
     fontSize: 18,
-    fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: 28,
-    marginBottom: 32,
-    paddingHorizontal: 20,
+    lineHeight: 32,
+    fontStyle: 'italic',
+    opacity: 0.8,
   },
-  legacyButton: {
-    borderWidth: 1,
-    paddingHorizontal: 24,
+  legacyLink: {
     paddingVertical: 12,
-    borderRadius: 2,
   },
-  legacyButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 2,
+  legacyLinkText: {
+    fontSize: 15,
+    color: '#121212',
+    letterSpacing: 1,
+    opacity: 0.6,
   },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F5F5F0',
   },
   loadingText: {
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: 4,
-    color: '#000',
+    fontSize: 18,
+    fontFamily: SERIF_FONT,
+    letterSpacing: 2,
+    color: '#121212',
+    opacity: 0.6,
   },
   notFoundText: {
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: 2,
-    color: '#999',
+    fontSize: 18,
+    fontFamily: SERIF_FONT,
+    letterSpacing: 1,
+    color: 'rgba(18, 18, 18, 0.4)',
   },
 });

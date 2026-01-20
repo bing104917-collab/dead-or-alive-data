@@ -1,21 +1,9 @@
 export const getAliveStatus = () => {
-  const phrases = [
-    "Still consuming oxygen",
-    "Not dead yet",
-    "Surviving 2026",
-    "AFK (Away From Kingdom)"
-  ];
-  return phrases[Math.floor(Math.random() * phrases.length)];
+  return "此岸";
 };
 
 export const getDeadStatus = () => {
-  const phrases = [
-    "Logged out",
-    "Game Over",
-    "Expired",
-    "Joined the Cloud"
-  ];
-  return phrases[Math.floor(Math.random() * phrases.length)];
+  return "彼岸";
 };
 
 export const calculateDaysBetween = (date1: string, date2: Date | string = new Date()) => {

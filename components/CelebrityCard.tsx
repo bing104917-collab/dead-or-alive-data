@@ -3,8 +3,7 @@ import { StyleSheet, Pressable, View as RNView, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { Text, View } from './Themed';
 import { Celebrity } from '@/data/celebrities';
-import { getAliveStatus, getDeadStatus, calculateLifeProgress } from '@/utils/statusHelpers';
-import { LifeProgressBar } from './LifeProgressBar';
+import { getAliveStatus, getDeadStatus } from '@/utils/statusHelpers';
 
 interface CelebrityCardProps {
   celebrity: Celebrity;
@@ -23,42 +22,49 @@ export function CelebrityCard({ celebrity }: CelebrityCardProps) {
     return isDead ? getDeadStatus() : getAliveStatus();
   }, [isDead]);
 
-  const lifePercentage = useMemo(() => {
-    return calculateLifeProgress(celebrity.birthDate, celebrity.deathDate);
-  }, [celebrity.birthDate, celebrity.deathDate]);
+  const yearsDisplay = useMemo(() => {
+    const birthYear = new Date(celebrity.birthDate).getFullYear();
+    if (isDead && celebrity.deathDate) {
+      const deathYear = new Date(celebrity.deathDate).getFullYear();
+      return `${birthYear} — ${deathYear}`;
+    }
+    return `降生於 ${birthYear}`;
+  }, [celebrity.birthDate, celebrity.deathDate, isDead]);
 
   return (
     <Link href={`/detail/${celebrity.id}`} asChild>
       <Pressable>
-        <View style={[
-          styles.card, 
-          isDead ? styles.cardDead : styles.cardAlive
-        ]}>
+        <View style={styles.card}>
           <RNView style={styles.info}>
-            <Text style={[
-              styles.name, 
-              isDead ? styles.textDead : styles.textAlive,
-              isDead && styles.textLineThrough
-            ]}>
-              {celebrity.name.toUpperCase()}
-            </Text>
+            <RNView style={styles.nameContainer}>
+              <Text style={[
+                styles.name, 
+                isDead ? styles.textDead : styles.textAlive,
+              ]}>
+                {celebrity.name}
+              </Text>
+              <Text style={[
+                styles.statusText,
+                isDead ? styles.textDeadDim : styles.textAliveDim
+              ]}>
+                {statusPhrase}
+              </Text>
+            </RNView>
             
-            <LifeProgressBar percentage={lifePercentage} isDead={isDead} />
-            
-            <Text style={[
-              styles.occupation,
-              isDead ? styles.textDeadDim : styles.textAliveDim
-            ]}>
-              {statusPhrase.toUpperCase()}
-            </Text>
-          </RNView>
-          
-          <RNView style={styles.statusContainer}>
-            {isDead ? (
-              <Text style={[styles.deadIcon, styles.textDeadDim]}>†</Text>
-            ) : (
-              <RNView style={styles.aliveIndicator} />
-            )}
+            <RNView style={styles.metaContainer}>
+              <Text style={[
+                styles.occupation,
+                isDead ? styles.textDeadDim : styles.textAliveDim
+              ]}>
+                {celebrity.occupation}
+              </Text>
+              <Text style={[
+                styles.years,
+                isDead ? styles.textDeadDim : styles.textAliveDim
+              ]}>
+                {yearsDisplay}
+              </Text>
+            </RNView>
           </RNView>
         </View>
       </Pressable>
@@ -68,73 +74,63 @@ export function CelebrityCard({ celebrity }: CelebrityCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingVertical: 24,
-    paddingHorizontal: 20,
-    marginVertical: 4,
-    borderRadius: 0,
-    borderWidth: 1,
-  },
-  cardAlive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#EEEEEE',
-  },
-  cardDead: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333333',
+    paddingHorizontal: 8,
+    marginVertical: 0,
+    backgroundColor: 'transparent',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(18, 18, 18, 0.1)',
   },
   info: {
     flex: 1,
     backgroundColor: 'transparent',
   },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+    marginBottom: 6,
+  },
   name: {
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontSize: 24,
+    fontWeight: '500',
     fontFamily: SERIF_FONT,
+    letterSpacing: 0.5,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: SERIF_FONT,
+    letterSpacing: 2,
+    opacity: 0.6,
+  },
+  metaContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   textAlive: {
-    color: '#000000',
+    color: '#121212',
   },
   textDead: {
-    color: '#888888',
-  },
-  textLineThrough: {
-    textDecorationLine: 'line-through',
+    color: '#A0A09A',
   },
   textAliveDim: {
     color: '#666666',
   },
   textDeadDim: {
-    color: '#555555',
+    color: '#A0A09A',
   },
   occupation: {
-    fontSize: 13,
-    marginTop: 4,
-    fontWeight: '500',
+    fontSize: 14,
     fontFamily: SERIF_FONT,
     fontStyle: 'italic',
+    opacity: 0.8,
   },
-  statusContainer: {
-    width: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  deadIcon: {
-    fontSize: 28,
+  years: {
+    fontSize: 13,
     fontFamily: SERIF_FONT,
-  },
-  aliveIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#00FF00',
-    shadowColor: '#00FF00',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
+    opacity: 0.7,
   },
 });
