@@ -44,24 +44,26 @@ export function useCelebrityData() {
   const mapData = useCallback((minData: MinimizedCelebrity[]): Celebrity[] => {
     return minData.map(item => ({
       id: item.id,
-      name: item.n,
+      name: item.n || 'Unknown',
       status: (item.s === 'a' ? 'alive' : 'dead') as CelebrityStatus,
-      birthDate: item.b || '',
+      birthDate: item.b || 'N/A',
       deathDate: item.d || null,
-      description: item.o || '',
-      occupation: item.o || '', // Using description as occupation for now
-      image: item.i,
+      description: item.o || 'No description available.',
+      occupation: item.o || 'Public Figure',
+      image: item.i || 'https://via.placeholder.com/150?text=No+Image',
     }));
   }, []);
 
   const fetchWithFallback = useCallback(async (): Promise<MinimizedCelebrity[] | null> => {
+    const timestamp = new Date().getTime();
     for (const url of DATA_URLS) {
       try {
-        console.log(`Attempting to fetch from: ${url}`);
+        const cacheBustedUrl = `${url}?t=${timestamp}`;
+        console.log(`Attempting to fetch from: ${cacheBustedUrl}`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per URL
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        const response = await fetch(url, { signal: controller.signal });
+        const response = await fetch(cacheBustedUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
 
         if (response.ok) {
@@ -79,6 +81,14 @@ export function useCelebrityData() {
 
   const loadData = useCallback(async () => {
     try {
+      // One-time clear of old dummy data
+      const hasClearedOldData = await AsyncStorage.getItem('has_cleared_old_data_v2');
+      if (!hasClearedOldData) {
+        console.log('Clearing old dummy data...');
+        await AsyncStorage.clear();
+        await AsyncStorage.setItem('has_cleared_old_data_v2', 'true');
+      }
+
       // 1. Load from AsyncStorage first for immediate UI
       const cached = await AsyncStorage.getItem(DATA_KEY);
       let initialDataLoaded = false;
