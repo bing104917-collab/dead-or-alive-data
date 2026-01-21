@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 
 interface UserProfile {
   birthDate: string;
@@ -387,7 +388,53 @@ export default function MonologuePage() {
     setLifeMetrics(prev => ({ ...prev, yearProgress, daysLeftInYear }));
   }, []);
 
+    const YEAR_MIN = 1900;
+    const YEAR_MAX = 2026;
+
+    const [birthYear, setBirthYear] = useState<number>(2000);
+    const [birthMonth, setBirthMonth] = useState<number>(1);
+    const [birthDay, setBirthDay] = useState<number>(1);
+
+    const pad2 = (n: number) => String(n).padStart(2, '0');
+    const daysInMonth = (y: number, m: number) => {
+    return new Date(y, m, 0).getDate(); 
+};
+
+  const birthDateString = (y: number, m: number, d: number) =>
+  `${y}-${pad2(m)}-${pad2(d)}`;
+
   useEffect(() => {
+  if (!isEditingProfile) return;
+
+  const v = profile.birthDate?.trim();
+  const m = v?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (m) {
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+
+    // 兜底到合法范围
+    const y2 = Math.min(Math.max(y, YEAR_MIN), YEAR_MAX);
+    const mo2 = Math.min(Math.max(mo, 1), 12);
+    const maxD = daysInMonth(y2, mo2);
+    const d2 = Math.min(Math.max(d, 1), maxD);
+
+    setBirthYear(y2);
+    setBirthMonth(mo2);
+    setBirthDay(d2);
+  } else {
+    // 没设置/格式不对就给默认
+    setBirthYear(2000);
+    setBirthMonth(1);
+    setBirthDay(1);
+  }
+}, [isEditingProfile]);
+
+
+  useEffect(() => {
+    const maxD = daysInMonth(birthYear, birthMonth);
+    if (birthDay > maxD) setBirthDay(maxD);
     if (profile.birthDate) {
       const birth = new Date(profile.birthDate);
       const today = new Date();
@@ -530,10 +577,53 @@ const saveProfile = async () => {
         <RNView style={styles.section}>
           <RNView style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>ABOUT ME</Text>
-            <TouchableOpacity onPress={() => isEditingProfile ? saveProfile() : setIsEditingProfile(true)}>
-              <Text style={styles.editButtonText}>{isEditingProfile ? '封存' : '修改'}</Text>
-            </TouchableOpacity>
-          </RNView>
+            <TouchableOpacity onPress={() => {isEditingProfile ? (
+  <RNView style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+    <RNView style={{ flex: 1 }}>
+      <Picker
+        selectedValue={birthYear}
+        onValueChange={(v) => setBirthYear(v)}
+        dropdownIconColor="#EEE"
+        style={{ color: '#EEE' }}
+      >
+        {Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, i) => YEAR_MIN + i).map(y => (
+          <Picker.Item key={y} label={`${y}`} value={y} />
+        ))}
+      </Picker>
+    </RNView>
+
+    <RNView style={{ width: 110 }}>
+      <Picker
+        selectedValue={birthMonth}
+        onValueChange={(v) => setBirthMonth(v)}
+        dropdownIconColor="#EEE"
+        style={{ color: '#EEE' }}
+      >
+        {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+          <Picker.Item key={m} label={`${m}月`} value={m} />
+        ))}
+      </Picker>
+    </RNView>
+
+    <RNView style={{ width: 110 }}>
+      <Picker
+        selectedValue={birthDay}
+        onValueChange={(v) => setBirthDay(v)}
+        dropdownIconColor="#EEE"
+        style={{ color: '#EEE' }}
+      >
+        {Array.from({ length: daysInMonth(birthYear, birthMonth) }, (_, i) => i + 1).map(d => (
+          <Picker.Item key={d} label={`${d}日`} value={d} />
+        ))}
+      </Picker>
+    </RNView>
+  </RNView>
+) : (
+  <Text style={styles.profileValue}>{profile.birthDate || '未設置'}</Text>
+)}>
+  <Text style={styles.editButtonText}>{isEditingProfile ? '封存' : '修改'}</Text>
+  </TouchableOpacity>
+         </RNView>
 
           <RNView style={styles.profileContent}>
             <RNView style={styles.profileItem}>
