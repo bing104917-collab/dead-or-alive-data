@@ -335,6 +335,7 @@ export default function MonologuePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [dailyQuote, setDailyQuote] = useState('');
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isInsightSubmitted, setIsInsightSubmitted] = useState(false);
   const [lifeMetrics, setLifeMetrics] = useState({ daysLived: 0, yearProgress: 0, daysLeftInYear: 0 });
 
   useEffect(() => {
@@ -387,7 +388,10 @@ export default function MonologuePage() {
       if (storedInsights) {
         const insights: DailyInsight[] = JSON.parse(storedInsights);
         const todayInsight = insights.find(i => i.date === today);
-        if (todayInsight) setInsight(todayInsight.content);
+        if (todayInsight) {
+          setInsight(todayInsight.content);
+          setIsInsightSubmitted(true);
+        }
       }
     } catch (e) {
       console.error('Failed to load profile data');
@@ -431,6 +435,7 @@ export default function MonologuePage() {
       }
 
       await AsyncStorage.setItem(INSIGHTS_KEY, JSON.stringify(insights));
+      setIsInsightSubmitted(true);
       Alert.alert('封存成功', '今日的感悟已入冊。');
     } catch (e) {
       Alert.alert('封存失敗');
@@ -478,17 +483,29 @@ export default function MonologuePage() {
             </RNView>
           </TouchableOpacity>
 
-          <TextInput
-            style={styles.insightInput}
-            placeholder="此刻的想法..."
-            value={insight}
-            onChangeText={setInsight}
-            multiline
-            placeholderTextColor="#CCC"
-          />
-          <TouchableOpacity style={styles.saveButton} onPress={saveDailyInsight}>
-            <Text style={styles.saveButtonText}>封存今日</Text>
-          </TouchableOpacity>
+          {isInsightSubmitted ? (
+            <RNView style={styles.submittedInsightContainer}>
+              <Text style={styles.submittedInsightText}>{insight}</Text>
+              <RNView style={styles.submittedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color="#8A8A82" />
+                <Text style={styles.submittedBadgeText}>今日已封存</Text>
+              </RNView>
+            </RNView>
+          ) : (
+            <>
+              <TextInput
+                style={styles.insightInput}
+                placeholder="此刻的想法..."
+                value={insight}
+                onChangeText={setInsight}
+                multiline
+                placeholderTextColor="#CCC"
+              />
+              <TouchableOpacity style={styles.saveButton} onPress={saveDailyInsight}>
+                <Text style={styles.saveButtonText}>封存今日</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </RNView>
 
         {/* Profile Section */}
@@ -637,6 +654,31 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: 'bold',
     letterSpacing: 2,
+  },
+  submittedInsightContainer: {
+    paddingVertical: 15,
+    borderLeftWidth: 1,
+    borderLeftColor: '#8A8A82',
+    paddingLeft: 15,
+    backgroundColor: '#F9F9F9',
+    marginTop: 10,
+  },
+  submittedInsightText: {
+    fontSize: 16,
+    color: '#444',
+    lineHeight: 24,
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
+  },
+  submittedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    gap: 5,
+  },
+  submittedBadgeText: {
+    fontSize: 10,
+    color: '#8A8A82',
+    letterSpacing: 1,
   },
   profileContent: {
     gap: 30,
