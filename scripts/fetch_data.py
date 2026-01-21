@@ -1,6 +1,9 @@
 import json
 import os
 import time
+import requests
+from PIL import Image
+import io
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 def fetch_data_from_wikidata():
@@ -10,8 +13,55 @@ def fetch_data_from_wikidata():
     sparql.setReturnFormat(JSON)
     sparql.setTimeout(60)
 
+    # Setup directories
+    IMAGES_DIR = "data/images"
+    os.makedirs(IMAGES_DIR, exist_ok=True)
+    
+    CDN_BASE_URL = "https://cdn.jsdelivr.net/gh/bing104917-collab/dead-or-alive-data@main/data/images/"
+
     # Dictionary to store unique celebrities
     celebrities = {}
+
+    def process_image(wd_id, image_url):
+        if not image_url:
+            return ""
+            
+        file_path = os.path.join(IMAGES_DIR, f"{wd_id}.jpg")
+        
+        # Skip if already exists
+        if os.path.exists(file_path):
+            return f"{CDN_BASE_URL}{wd_id}.jpg"
+            
+        try:
+            print(f"  > Downloading image for {wd_id}...")
+            response = requests.get(image_url, timeout=15)
+            if response.status_code == 200:
+                img_data = response.content
+                img = Image.open(io.BytesIO(img_data))
+                
+                # Convert to RGB if necessary (e.g. for RGBA or CMYK)
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                
+                # Resize: max width 400px, keep aspect ratio
+                max_width = 400
+                if img.width > max_width:
+                    ratio = max_width / float(img.width)
+                    new_height = int(float(img.height) * ratio)
+                    img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
+                
+                # Save as JPEG
+                img.save(file_path, "JPEG", quality=85)
+                
+                # Small delay to be polite
+                time.sleep(0.5)
+                return f"{CDN_BASE_URL}{wd_id}.jpg"
+            else:
+                print(f"  > Failed to download image for {wd_id}: Status {response.status_code}")
+                return image_url # Fallback to original
+        except Exception as e:
+            print(f"  > Error processing image for {wd_id}: {e}")
+            return image_url # Fallback to original
 
     def run_query(label, sparql_query):
         try:
@@ -38,6 +88,9 @@ def fetch_data_from_wikidata():
                     
                     status = 'd' if death else 'a'
 
+                    # Process and mirror image
+                    cdn_image_url = process_image(wd_id, image)
+
                     entry = {
                         "id": wd_id,
                         "n": name,
@@ -45,7 +98,7 @@ def fetch_data_from_wikidata():
                     }
                     if birth: entry["b"] = birth
                     if death: entry["d"] = death
-                    if image: entry["i"] = image
+                    if cdn_image_url: entry["i"] = cdn_image_url
                     if desc: entry["o"] = desc
                     
                     celebrities[wd_id] = entry
