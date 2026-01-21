@@ -337,6 +337,35 @@ export default function MonologuePage() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [lifeMetrics, setLifeMetrics] = useState({ daysLived: 0, yearProgress: 0, daysLeftInYear: 0 });
 
+  function isValidISODate(input: string) {
+  // 1) 格式 YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return { ok: false, msg: '請用 YYYY-MM-DD 格式' };
+
+  const [yStr, mStr, dStr] = input.split('-');
+  const y = Number(yStr);
+  const m = Number(mStr);
+  const d = Number(dStr);
+
+  // 2) 月/日范围初筛
+  if (m < 1 || m > 12) return { ok: false, msg: '月份需在 01-12' };
+  if (d < 1 || d > 31) return { ok: false, msg: '日期需在 01-31' };
+
+  // 3) 用 UTC 构造，反向比对，避免 JS Date 容错滚动（比如 2024-02-30 -> 3月1日）
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  const y2 = dt.getUTCFullYear();
+  const m2 = dt.getUTCMonth() + 1;
+  const d2 = dt.getUTCDate();
+  if (y !== y2 || m !== m2 || d !== d2) return { ok: false, msg: '不存在的日期' };
+
+  // 4) 不允许未来
+  const today = new Date();
+  const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  if (dt.getTime() > todayUTC.getTime()) return { ok: false, msg: '降生日期不能晚於今天' };
+
+  return { ok: true as const };
+}
+
+
   useEffect(() => {
     loadData();
     
@@ -407,14 +436,20 @@ export default function MonologuePage() {
     }
   };
 
-  const saveProfile = async () => {
-    try {
-      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-      setIsEditingProfile(false);
-    } catch (e) {
-      Alert.alert('封存失敗');
+const saveProfile = async () => {
+  try {
+    const v = isValidISODate(profile.birthDate.trim());
+    if (!v.ok) {
+      Alert.alert('日期無效', v.msg);
+      return;
     }
-  };
+
+    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    setIsEditingProfile(false);
+  } catch (e) {
+    Alert.alert('封存失敗');
+  }
+};
 
   const saveDailyInsight = async () => {
     if (!insight.trim()) return;
