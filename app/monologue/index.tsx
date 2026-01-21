@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 
 interface UserProfile {
   birthDate: string;
@@ -338,6 +339,35 @@ export default function MonologuePage() {
   const [isInsightSubmitted, setIsInsightSubmitted] = useState(false);
   const [lifeMetrics, setLifeMetrics] = useState({ daysLived: 0, yearProgress: 0, daysLeftInYear: 0 });
 
+  function isValidISODate(input: string) {
+  // 1) 格式 YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return { ok: false, msg: '請用 YYYY-MM-DD 格式' };
+
+  const [yStr, mStr, dStr] = input.split('-');
+  const y = Number(yStr);
+  const m = Number(mStr);
+  const d = Number(dStr);
+
+  // 2) 月/日范围初筛
+  if (m < 1 || m > 12) return { ok: false, msg: '月份需在 01-12' };
+  if (d < 1 || d > 31) return { ok: false, msg: '日期需在 01-31' };
+
+  // 3) 用 UTC 构造，反向比对，避免 JS Date 容错滚动（比如 2024-02-30 -> 3月1日）
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  const y2 = dt.getUTCFullYear();
+  const m2 = dt.getUTCMonth() + 1;
+  const d2 = dt.getUTCDate();
+  if (y !== y2 || m !== m2 || d !== d2) return { ok: false, msg: '不存在的日期' };
+
+  // 4) 不允许未来
+  const today = new Date();
+  const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  if (dt.getTime() > todayUTC.getTime()) return { ok: false, msg: '降生日期不能晚於今天' };
+
+  return { ok: true as const };
+}
+
+
   useEffect(() => {
     loadData();
     
@@ -359,7 +389,53 @@ export default function MonologuePage() {
     setLifeMetrics(prev => ({ ...prev, yearProgress, daysLeftInYear }));
   }, []);
 
+    const YEAR_MIN = 1900;
+    const YEAR_MAX = 2026;
+
+    const [birthYear, setBirthYear] = useState<number>(2000);
+    const [birthMonth, setBirthMonth] = useState<number>(1);
+    const [birthDay, setBirthDay] = useState<number>(1);
+
+    const pad2 = (n: number) => String(n).padStart(2, '0');
+    const daysInMonth = (y: number, m: number) => {
+    return new Date(y, m, 0).getDate(); 
+};
+
+  const birthDateString = (y: number, m: number, d: number) =>
+  `${y}-${pad2(m)}-${pad2(d)}`;
+
   useEffect(() => {
+  if (!isEditingProfile) return;
+
+  const v = profile.birthDate?.trim();
+  const m = v?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (m) {
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+
+    // 兜底到合法范围
+    const y2 = Math.min(Math.max(y, YEAR_MIN), YEAR_MAX);
+    const mo2 = Math.min(Math.max(mo, 1), 12);
+    const maxD = daysInMonth(y2, mo2);
+    const d2 = Math.min(Math.max(d, 1), maxD);
+
+    setBirthYear(y2);
+    setBirthMonth(mo2);
+    setBirthDay(d2);
+  } else {
+    // 没设置/格式不对就给默认
+    setBirthYear(2000);
+    setBirthMonth(1);
+    setBirthDay(1);
+  }
+}, [isEditingProfile]);
+
+
+  useEffect(() => {
+    const maxD = daysInMonth(birthYear, birthMonth);
+    if (birthDay > maxD) setBirthDay(maxD);
     if (profile.birthDate) {
       const birth = new Date(profile.birthDate);
       const today = new Date();
@@ -411,14 +487,20 @@ export default function MonologuePage() {
     }
   };
 
-  const saveProfile = async () => {
-    try {
-      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-      setIsEditingProfile(false);
-    } catch (e) {
-      Alert.alert('封存失敗');
+const saveProfile = async () => {
+  try {
+    const v = isValidISODate(profile.birthDate.trim());
+    if (!v.ok) {
+      Alert.alert('日期無效', v.msg);
+      return;
     }
-  };
+
+    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    setIsEditingProfile(false);
+  } catch (e) {
+    Alert.alert('封存失敗');
+  }
+};
 
   const saveDailyInsight = async () => {
     if (!insight.trim()) return;
@@ -512,10 +594,53 @@ export default function MonologuePage() {
         <RNView style={styles.section}>
           <RNView style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>ABOUT ME</Text>
-            <TouchableOpacity onPress={() => isEditingProfile ? saveProfile() : setIsEditingProfile(true)}>
-              <Text style={styles.editButtonText}>{isEditingProfile ? '封存' : '修改'}</Text>
-            </TouchableOpacity>
-          </RNView>
+            <TouchableOpacity onPress={() => {isEditingProfile ? (
+  <RNView style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+    <RNView style={{ flex: 1 }}>
+      <Picker
+        selectedValue={birthYear}
+        onValueChange={(v) => setBirthYear(v)}
+        dropdownIconColor="#EEE"
+        style={{ color: '#EEE' }}
+      >
+        {Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, i) => YEAR_MIN + i).map(y => (
+          <Picker.Item key={y} label={`${y}`} value={y} />
+        ))}
+      </Picker>
+    </RNView>
+
+    <RNView style={{ width: 110 }}>
+      <Picker
+        selectedValue={birthMonth}
+        onValueChange={(v) => setBirthMonth(v)}
+        dropdownIconColor="#EEE"
+        style={{ color: '#EEE' }}
+      >
+        {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+          <Picker.Item key={m} label={`${m}月`} value={m} />
+        ))}
+      </Picker>
+    </RNView>
+
+    <RNView style={{ width: 110 }}>
+      <Picker
+        selectedValue={birthDay}
+        onValueChange={(v) => setBirthDay(v)}
+        dropdownIconColor="#EEE"
+        style={{ color: '#EEE' }}
+      >
+        {Array.from({ length: daysInMonth(birthYear, birthMonth) }, (_, i) => i + 1).map(d => (
+          <Picker.Item key={d} label={`${d}日`} value={d} />
+        ))}
+      </Picker>
+    </RNView>
+  </RNView>
+) : (
+  <Text style={styles.profileValue}>{profile.birthDate || '未設置'}</Text>
+)}>
+  <Text style={styles.editButtonText}>{isEditingProfile ? '封存' : '修改'}</Text>
+  </TouchableOpacity>
+         </RNView>
 
           <RNView style={styles.profileContent}>
             <RNView style={styles.profileItem}>
