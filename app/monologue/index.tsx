@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, SafeAreaView, View as RNView, TextInput, ScrollView, Alert, Platform } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,14 +21,14 @@ const INSIGHTS_KEY = 'ikide_insights';
 const REVEAL_KEY = 'ikide_last_reveal_date';
 
 const PRESET_INSIGHTS = [
-  "生如夏花之絢爛，死如秋葉之靜美。",
-  "這世界我來過，我愛過，我努力過。",
-  "死亡不是失去生命，而是走出時間。",
-  "每一個不曾起舞的日子，都是對生命的辜負。",
-  "人生的意義在於內心的寧靜。",
-  "我們最終都會成為星塵。",
-  "活在當下，便是永恆。",
-  "生命是穿堂風，攜花香也載塵埃。",
+"生如夏花之絢爛，死如秋葉之靜美。",
+"這世界我來過，我愛過，我努力過。",
+"死亡不是失去生命，而是走出時間。",
+"每一個不曾起舞的日子，都是對生命的辜負。",
+"人生的意義在於內心的寧靜。",
+"我們最終都會成為星塵。",
+"活在當下，便是永恆。",
+"生命是穿堂風，攜花香也載塵埃。",
 "心有山海，靜而無邊。",
 "時光不語，卻回答所有問題。",
 "與自己和解，是終身的修行。",
@@ -338,6 +339,13 @@ export default function MonologuePage() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [lifeMetrics, setLifeMetrics] = useState({ daysLived: 0, yearProgress: 0, daysLeftInYear: 0 });
 
+  // Timer states
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(10); // Default 10 minutes
+  const [timeLeft, setTimeLeft] = useState(600);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const timerRef = useRef<any>(null);
+
   function isValidISODate(input: string) {
   // 1) 格式 YYYY-MM-DD
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return { ok: false, msg: '請用 YYYY-MM-DD 格式' };
@@ -462,12 +470,59 @@ export default function MonologuePage() {
       const storedInsights = await AsyncStorage.getItem(INSIGHTS_KEY);
       if (storedInsights) {
         const insights: DailyInsight[] = JSON.parse(storedInsights);
-        const todayInsight = insights.find(i => i.date === today);
-        if (todayInsight) setInsight(todayInsight.content);
+        // 不再自動加載今日感悟到輸入框，保持初始化為空白
+        // const todayInsight = insights.find(i => i.date === today);
+        // if (todayInsight) setInsight(todayInsight.content);
       }
     } catch (e) {
       console.error('Failed to load profile data');
     }
+  };
+
+  // Timer logic
+  useEffect(() => {
+    if (isTimerRunning && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsTimerRunning(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+      Alert.alert('時間到', '專注書寫時間已結束。');
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isTimerRunning, timeLeft]);
+
+  const toggleTimer = () => {
+    if (isTimerRunning) {
+      setIsTimerRunning(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+    } else {
+      setIsTimerRunning(true);
+    }
+  };
+
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeLeft(timerDuration * 60);
+  };
+
+  const handleDurationChange = (value: number) => {
+    const mins = Math.round(value);
+    setTimerDuration(mins);
+    if (!isTimerRunning) {
+      setTimeLeft(mins * 60);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleReveal = async () => {
@@ -504,19 +559,24 @@ export default function MonologuePage() {
   const saveDailyInsight = async () => {
     if (!insight.trim()) return;
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date().toISOString();
       const storedInsights = await AsyncStorage.getItem(INSIGHTS_KEY);
       let insights: DailyInsight[] = storedInsights ? JSON.parse(storedInsights) : [];
       
-      const index = insights.findIndex(i => i.date === today);
-      if (index > -1) {
-        insights[index].content = insight;
-      } else {
-        insights.push({ date: today, content: insight });
-      }
+      // 改為每次都新增一條紀錄，而不是覆蓋今日
+      insights.push({ date: now, content: insight });
 
       await AsyncStorage.setItem(INSIGHTS_KEY, JSON.stringify(insights));
-      Alert.alert('封存成功', '今日的感悟已入冊。');
+      
+      // 清空輸入框
+      setInsight('');
+      
+      Alert.alert('封存成功', '此刻的感悟已入冊。', [
+        { 
+          text: '確定', 
+          onPress: () => router.push('/monologue/history') 
+        }
+      ]);
     } catch (e) {
       Alert.alert('封存失敗');
     }
@@ -528,6 +588,8 @@ export default function MonologuePage() {
         title: '獨 白',
         headerTitleStyle: styles.headerTitle,
         headerShadowVisible: false,
+        headerShown: true,
+        headerStyle: { backgroundColor: '#F5F5F0' },
         animation: 'fade',
         headerLeft: () => (
           <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
@@ -547,32 +609,77 @@ export default function MonologuePage() {
           </RNView>
           
           <TouchableOpacity 
-            activeOpacity={0.9} 
+            style={styles.quoteCard} 
+            activeOpacity={0.9}
             onPress={handleReveal}
-            onLongPress={handleReveal}
           >
-            <RNView style={[styles.quoteCard, !isRevealed && styles.quoteCardSealed]}>
-              {isRevealed ? (
-                <Text style={styles.quoteText}>"{dailyQuote}"</Text>
-              ) : (
-                <RNView style={styles.sealedContainer}>
-                  <Ionicons name="eye-off-outline" size={24} color="#D0D0CA" />
-                  <Text style={styles.sealedText}>點擊以揭示今日的命運</Text>
+            {isRevealed ? (
+              <Text style={styles.quoteText}>"{dailyQuote}"</Text>
+            ) : (
+              <RNView style={styles.sealedContainer}>
+                <Ionicons name="eye-off-outline" size={24} color="#D0D0CA" />
+                <Text style={styles.sealedText}>點擊揭曉今日生命感悟</Text>
+              </RNView>
+            )}
+          </TouchableOpacity>
+        </RNView>
+
+        {/* User Input Section */}
+        <RNView style={styles.section}>
+          <RNView style={styles.sectionHeader}>
+            <Text style={styles.sectionLabel}>此刻的想法</Text>
+            <TouchableOpacity onPress={() => setIsTimerActive(!isTimerActive)}>
+              <Text style={styles.timerToggleText}>{isTimerActive ? '關閉定時' : '開啟定時'}</Text>
+            </TouchableOpacity>
+          </RNView>
+
+          {isTimerActive && (
+            <RNView style={styles.timerContainer}>
+              <RNView style={styles.timerHeader}>
+                <Text style={styles.timerTime}>{formatTime(timeLeft)}</Text>
+                <RNView style={styles.timerControls}>
+                  <TouchableOpacity onPress={toggleTimer} style={styles.timerButton}>
+                    <Ionicons name={isTimerRunning ? "pause" : "play"} size={20} color="#000" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={resetTimer} style={styles.timerButton}>
+                    <Ionicons name="refresh" size={20} color="#000" />
+                  </TouchableOpacity>
+                </RNView>
+              </RNView>
+              
+              {!isTimerRunning && (
+                <RNView style={styles.sliderWrapper}>
+                  <Slider
+                    style={styles.slider}
+                    minimumValue={1}
+                    maximumValue={120}
+                    step={1}
+                    value={timerDuration}
+                    onValueChange={handleDurationChange}
+                    minimumTrackTintColor="#121212"
+                    maximumTrackTintColor="#D0D0CA"
+                    thumbTintColor="#121212"
+                  />
+                  <Text style={styles.durationText}>{timerDuration} 分鐘</Text>
                 </RNView>
               )}
             </RNView>
-          </TouchableOpacity>
+          )}
 
           <TextInput
             style={styles.insightInput}
-            placeholder="此刻的想法..."
+            placeholder="在時間的流逝中，留下一點痕跡..."
+            placeholderTextColor="#CCC"
+            multiline
             value={insight}
             onChangeText={setInsight}
-            multiline
-            placeholderTextColor="#CCC"
           />
-          <TouchableOpacity style={styles.saveButton} onPress={saveDailyInsight}>
-            <Text style={styles.saveButtonText}>封存今日</Text>
+          <TouchableOpacity 
+            style={[styles.saveButton, !insight.trim() && { opacity: 0.5 }]} 
+            onPress={saveDailyInsight}
+            disabled={!insight.trim()}
+          >
+            <Text style={styles.saveButtonText}>封 存 此 刻</Text>
           </TouchableOpacity>
         </RNView>
 
@@ -646,13 +753,13 @@ export default function MonologuePage() {
             <RNView style={styles.metricItem}>
               <Text style={styles.metricLabel}>已渡過</Text>
               <Text style={styles.metricValue}>{lifeMetrics.daysLived || '—'}</Text>
-              <Text style={styles.metricUnit}>DAYS</Text>
+              <Text style={styles.metricUnit}>晝夜</Text>
             </RNView>
             
             <RNView style={styles.metricItem}>
               <Text style={styles.metricLabel}>今年剩餘</Text>
               <Text style={styles.metricValue}>{lifeMetrics.daysLeftInYear}</Text>
-              <Text style={styles.metricUnit}>DAYS</Text>
+              <Text style={styles.metricUnit}>晝夜</Text>
             </RNView>
           </RNView>
 
@@ -859,5 +966,54 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#EEE',
     fontStyle: 'italic',
+  },
+  timerToggleText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#999',
+    textDecorationLine: 'underline',
+    letterSpacing: 1,
+  },
+  timerContainer: {
+    backgroundColor: '#F9F9F9',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#E8E8E0',
+  },
+  timerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  timerTime: {
+    fontSize: 24,
+    fontWeight: '200',
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
+    color: '#121212',
+  },
+  timerControls: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  timerButton: {
+    padding: 5,
+  },
+  sliderWrapper: {
+    marginTop: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  slider: {
+    flex: 1,
+    height: 40,
+  },
+  durationText: {
+    fontSize: 12,
+    color: '#999',
+    width: 60,
+    textAlign: 'right',
   },
 });

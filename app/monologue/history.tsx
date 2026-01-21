@@ -44,12 +44,29 @@ export default function InsightHistoryPage() {
     ]);
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ 
         title: '感 悟 歷 史',
         headerTitleStyle: styles.headerTitle,
         headerShadowVisible: false,
+        headerShown: true,
+        headerStyle: { backgroundColor: '#F5F5F0' },
         headerLeft: () => (
           <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
             <Ionicons name="chevron-back" size={24} color="#000" />
@@ -68,7 +85,7 @@ export default function InsightHistoryPage() {
             activeOpacity={0.7}
           >
             <RNView style={styles.cardHeader}>
-              <Text style={styles.dateText}>{item.date}</Text>
+              <Text style={styles.dateText}>{formatDate(item.date)}</Text>
               <Ionicons name="ellipsis-horizontal" size={16} color="#EEE" />
             </RNView>
             <Text style={styles.contentText}>{item.content}</Text>

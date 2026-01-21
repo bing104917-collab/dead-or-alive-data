@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, SafeAreaView, View as RNView, Platform, TouchableOpacity, Alert } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,7 @@ const DURATIONS = [
   { label: '15m', value: 15 },
   { label: '25m', value: 25 },
   { label: '45m', value: 45 },
+  { label: '自定義', value: 0 },
 ];
 
 export default function FocusScreen() {
@@ -20,12 +22,14 @@ export default function FocusScreen() {
   
   // States
   const [selectedDuration, setSelectedDuration] = useState(25); // in minutes
+  const [customDuration, setCustomDuration] = useState(25); // for the slider
   const [timeLeft, setTimeLeft] = useState(25 * 60); // in seconds
+  const [isCustomMode, setIsCustomMode] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [completedDuration, setCompletedDuration] = useState(0); 
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any>(null);
   const { saveSession } = useFocusHistory();
 
   // Keep screen awake only when running
@@ -48,8 +52,8 @@ export default function FocusScreen() {
   const resetTimer = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsRunning(false);
-    setTimeLeft(selectedDuration * 60);
-  }, [selectedDuration]);
+    setTimeLeft((isCustomMode ? customDuration : selectedDuration) * 60);
+  }, [selectedDuration, customDuration, isCustomMode]);
 
   // Logic: Select Preset
   const handleSelectDuration = (mins: number) => {
@@ -57,8 +61,24 @@ export default function FocusScreen() {
       setIsRunning(false);
     }
     Haptics.selectionAsync();
-    setSelectedDuration(mins);
-    setTimeLeft(mins * 60);
+    
+    if (mins === 0) {
+      setIsCustomMode(true);
+      setSelectedDuration(0);
+      setTimeLeft(customDuration * 60);
+    } else {
+      setIsCustomMode(false);
+      setSelectedDuration(mins);
+      setTimeLeft(mins * 60);
+    }
+  };
+
+  const handleCustomDurationChange = (value: number) => {
+    const mins = Math.round(value);
+    setCustomDuration(mins);
+    if (!isRunning) {
+      setTimeLeft(mins * 60);
+    }
   };
 
   // Logic: Finish Early
@@ -70,10 +90,11 @@ export default function FocusScreen() {
     setIsRunning(false);
     if (timerRef.current) clearInterval(timerRef.current);
 
-    const elapsed = (selectedDuration * 60) - timeLeft;
+    const activeDuration = isCustomMode ? customDuration : selectedDuration;
+    const elapsed = (activeDuration * 60) - timeLeft;
     setCompletedDuration(elapsed > 0 ? elapsed : 0);
     setIsModalVisible(true);
-  }, [selectedDuration, timeLeft]);
+  }, [selectedDuration, customDuration, isCustomMode, timeLeft]);
 
   // Logic: Save Session
   const handleSaveSession = async (note: string) => {
@@ -99,7 +120,8 @@ export default function FocusScreen() {
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
-      setCompletedDuration(selectedDuration * 60);
+      const activeDuration = isCustomMode ? customDuration : selectedDuration;
+      setCompletedDuration(activeDuration * 60);
       setIsModalVisible(true);
       if (timerRef.current) clearInterval(timerRef.current);
     }
@@ -107,7 +129,7 @@ export default function FocusScreen() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, timeLeft, selectedDuration]);
+  }, [isRunning, timeLeft, selectedDuration, customDuration, isCustomMode]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -129,20 +151,40 @@ export default function FocusScreen() {
         <RNView style={[styles.presetContainer, isRunning && styles.dimmed]}>
           {DURATIONS.map((d) => (
             <TouchableOpacity 
-              key={d.value} 
+              key={d.label} 
               onPress={() => handleSelectDuration(d.value)}
               style={styles.presetButton}
               disabled={isRunning}
             >
               <Text style={[
                 styles.presetText, 
-                selectedDuration === d.value && styles.presetTextActive
+                (selectedDuration === d.value && d.value !== 0) && styles.presetTextActive,
+                (isCustomMode && d.value === 0) && styles.presetTextActive
               ]}>
                 {d.label}
               </Text>
             </TouchableOpacity>
           ))}
         </RNView>
+
+        {/* Custom Duration Slider */}
+        {isCustomMode && (
+          <RNView style={[styles.customSliderContainer, isRunning && styles.dimmed]}>
+            <Text style={styles.customDurationText}>{customDuration} 分鐘</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={120}
+              step={1}
+              value={customDuration}
+              onValueChange={handleCustomDurationChange}
+              disabled={isRunning}
+              minimumTrackTintColor="#333"
+              maximumTrackTintColor="#D0D0CA"
+              thumbTintColor="#333"
+            />
+          </RNView>
+        )}
 
         {/* Timer Display with Breathing Circle */}
         <RNView style={styles.timerContainer}>
@@ -163,7 +205,7 @@ export default function FocusScreen() {
           </TouchableOpacity>
 
           <RNView style={styles.secondaryControls}>
-            {(timeLeft !== selectedDuration * 60 && !isRunning) && (
+            {(timeLeft !== (isCustomMode ? customDuration : selectedDuration) * 60 && !isRunning) && (
               <TouchableOpacity style={styles.textButton} onPress={resetTimer}>
                 <Text style={styles.textButtonLabel}>RESET</Text>
               </TouchableOpacity>
@@ -247,6 +289,21 @@ const styles = StyleSheet.create({
   presetTextActive: {
     color: '#333',
     fontWeight: '500',
+  },
+  customSliderContainer: {
+    width: '80%',
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  customDurationText: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 10,
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
+  },
+  slider: {
+    width: '100%',
+    height: 40,
   },
   timerContainer: {
     marginBottom: 80,

@@ -4,33 +4,6 @@ import { FocusSession } from '../types/FocusSession';
 
 const FOCUS_HISTORY_KEY = 'focus_session_history';
 
-// Mock Data
-const MOCK_SESSIONS: FocusSession[] = [
-  {
-    id: 'mock-1',
-    startTime: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-    duration: 1500, // 25 mins
-    mode: 'silent',
-  },
-  {
-    id: 'mock-2',
-    startTime: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    duration: 3600, // 60 mins
-    userNote: 'Coding the new feature',
-    aiInsight: 'Creation is the sound of the soul breaking silence.',
-    mode: 'recorded',
-    tags: ['coding', 'feature'],
-  },
-  {
-    id: 'mock-3',
-    startTime: new Date().toISOString(), // Today
-    duration: 1800, // 30 mins
-    userNote: 'Deep work on data layer',
-    aiInsight: 'Order is the foundation of freedom.',
-    mode: 'recorded',
-  },
-];
-
 export const useFocusHistory = () => {
   const [sessions, setSessions] = useState<FocusSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,9 +19,7 @@ export const useFocusHistory = () => {
           new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
         ));
       } else {
-        // If no data, use mock data for initial development
-        setSessions(MOCK_SESSIONS);
-        await AsyncStorage.setItem(FOCUS_HISTORY_KEY, JSON.stringify(MOCK_SESSIONS));
+        setSessions([]);
       }
     } catch (e) {
       console.error('Failed to load focus sessions', e);

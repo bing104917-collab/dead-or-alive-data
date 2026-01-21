@@ -341,6 +341,8 @@ export default function BondsPage() {
           title: '羈 絆',
           headerTitleStyle: styles.headerTitle,
           headerShadowVisible: false,
+          headerShown: true,
+          headerStyle: { backgroundColor: '#F5F5F0' },
           animation: 'fade',
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>

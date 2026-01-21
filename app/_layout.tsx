@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { GlobalSettingsProvider } from '@/context/GlobalSettings';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,16 +49,19 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="focus/index" options={{ headerShown: false }} />
+    <GlobalSettingsProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="focus/index" options={{ headerShown: false }} />
           <Stack.Screen name="focus/history" options={{ headerShown: true }} />
           <Stack.Screen name="celebrities/index" options={{ headerShown: false }} />
-        <Stack.Screen name="bonds/index" options={{ headerShown: false }} />
-        <Stack.Screen name="monologue/index" options={{ headerShown: false }} />
-        <Stack.Screen name="detail/[id]" options={{ presentation: 'modal', title: '' }} />
-      </Stack>
-    </ThemeProvider>
+          <Stack.Screen name="bonds/index" options={{ headerShown: false }} />
+          <Stack.Screen name="monologue/index" options={{ headerShown: false }} />
+          <Stack.Screen name="detail/[id]" options={{ presentation: 'modal', title: '' }} />
+          <Stack.Screen name="void/index" options={{ headerShown: false, animation: 'fade' }} />
+        </Stack>
+      </ThemeProvider>
+    </GlobalSettingsProvider>
   );
 }
