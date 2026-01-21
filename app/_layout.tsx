@@ -51,6 +51,11 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="focus/index" options={{ headerShown: false }} />
+          <Stack.Screen name="focus/history" options={{ headerShown: true }} />
+          <Stack.Screen name="celebrities/index" options={{ headerShown: false }} />
+        <Stack.Screen name="bonds/index" options={{ headerShown: false }} />
+        <Stack.Screen name="monologue/index" options={{ headerShown: false }} />
         <Stack.Screen name="detail/[id]" options={{ presentation: 'modal', title: '' }} />
       </Stack>
     </ThemeProvider>

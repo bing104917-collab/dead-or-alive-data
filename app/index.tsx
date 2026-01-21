@@ -31,11 +31,19 @@ export default function LandingPage() {
       fontSize: 36,
     },
     {
+      title: '專 注',
+      subtitle: 'G A Z E',
+      path: '/focus',
+      description: '凝視時間的流逝',
+      style: { alignSelf: 'flex-start', marginLeft: 30, marginTop: 40 } as const,
+      fontSize: 40,
+    },
+    {
       title: '獨 白',
       subtitle: 'MONOLOGUE',
       path: '/monologue',
       description: '與內心自我的對話',
-      style: { alignSelf: 'center', marginTop: 30 } as const,
+      style: { alignSelf: 'flex-end', marginRight: 20, marginTop: 30 } as const,
       fontSize: 48,
     },
   ];
