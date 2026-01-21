@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 1. 定義原始 JSON 的結構 (對應你截圖裡的 minified 數據)
+// 1. 定義原始 JSON 的結構
 interface RawCelebrity {
   id: string;
   n: string; // name
@@ -12,7 +12,7 @@ interface RawCelebrity {
   o?: string; // occupation/description
 }
 
-// 2. 定義 App 內部使用的結構 (你的 UI 組件用的)
+// 2. 定義 App 內部使用的結構
 export interface Celebrity {
   id: string;
   name: string;
@@ -39,10 +39,14 @@ export const useCelebrityData = () => {
     try {
       setIsLoading(true);
       
-      // --- 強制清除舊緩存 (防止 App 記住舊的 3 人名單) ---
-      // 只要成功抓到一次新數據，之後可以把這行註釋掉
-      await AsyncStorage.removeItem(CACHE_KEY); 
-      // -----------------------------------------------
+      // 讀取本地緩存
+      const cached = await AsyncStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsedCached = JSON.parse(cached);
+        setData(parsedCached);
+        // 如果已經有緩存，可以先關閉 loading 狀態，讓用戶立即看到內容
+        setIsLoading(false);
+      }
 
       console.log("Fetching from:", API_URL);
       // 加一個隨機數防止瀏覽器/網路層緩存
@@ -62,19 +66,17 @@ export const useCelebrityData = () => {
           occupation: item.o || 'Unknown',
         }));
 
-        console.log(`✅ Success! Loaded ${mappedData.length} celebrities.`);
+        console.log(`Success Loaded ${mappedData.length} celebrities.`);
         
         setData(mappedData);
         await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(mappedData));
-      } else {
+      } else if (!cached) {
+        // 只有在既沒有緩存又請求失敗時才拋錯
         throw new Error('Network response was not ok');
       }
     } catch (error) {
-      console.log('Error fetching data, checking cache:', error);
-      const cached = await AsyncStorage.getItem(CACHE_KEY);
-      if (cached) {
-        setData(JSON.parse(cached));
-      }
+      console.log('Error fetching data:', error);
+      // 錯誤處理：如果 try 塊中沒有設置過 data，這裡會保持空數組
     } finally {
       setIsLoading(false);
     }
