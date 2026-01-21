@@ -34,7 +34,11 @@ def fetch_data_from_wikidata():
             
         try:
             print(f"  > Downloading image for {wd_id}...")
-            response = requests.get(image_url, timeout=15)
+            # Define headers to mimic a browser and comply with Wikimedia policy 
+            headers = { 
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DeadOrAliveApp/1.0" 
+            } 
+            response = requests.get(image_url, headers=headers, timeout=15)
             if response.status_code == 200:
                 img_data = response.content
                 img = Image.open(io.BytesIO(img_data))
