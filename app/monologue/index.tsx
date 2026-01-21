@@ -336,7 +336,6 @@ export default function MonologuePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [dailyQuote, setDailyQuote] = useState('');
   const [isRevealed, setIsRevealed] = useState(false);
-  const [isInsightSubmitted, setIsInsightSubmitted] = useState(false);
   const [lifeMetrics, setLifeMetrics] = useState({ daysLived: 0, yearProgress: 0, daysLeftInYear: 0 });
 
   function isValidISODate(input: string) {
@@ -464,10 +463,7 @@ export default function MonologuePage() {
       if (storedInsights) {
         const insights: DailyInsight[] = JSON.parse(storedInsights);
         const todayInsight = insights.find(i => i.date === today);
-        if (todayInsight) {
-          setInsight(todayInsight.content);
-          setIsInsightSubmitted(true);
-        }
+        if (todayInsight) setInsight(todayInsight.content);
       }
     } catch (e) {
       console.error('Failed to load profile data');
@@ -487,20 +483,23 @@ export default function MonologuePage() {
     }
   };
 
-const saveProfile = async () => {
-  try {
-    const v = isValidISODate(profile.birthDate.trim());
-    if (!v.ok) {
-      Alert.alert('日期無效', v.msg);
-      return;
-    }
+  const saveProfile = async () => {
+    try {
+      const newBirthDate = birthDateString(birthYear, birthMonth, birthDay);
+      const v = isValidISODate(newBirthDate);
+      if (!v.ok) {
+        Alert.alert('日期無效', v.msg);
+        return;
+      }
 
-    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-    setIsEditingProfile(false);
-  } catch (e) {
-    Alert.alert('封存失敗');
-  }
-};
+      const newProfile = { ...profile, birthDate: newBirthDate };
+      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(newProfile));
+      setProfile(newProfile);
+      setIsEditingProfile(false);
+    } catch (e) {
+      Alert.alert('封存失敗');
+    }
+  };
 
   const saveDailyInsight = async () => {
     if (!insight.trim()) return;
@@ -517,7 +516,6 @@ const saveProfile = async () => {
       }
 
       await AsyncStorage.setItem(INSIGHTS_KEY, JSON.stringify(insights));
-      setIsInsightSubmitted(true);
       Alert.alert('封存成功', '今日的感悟已入冊。');
     } catch (e) {
       Alert.alert('封存失敗');
@@ -565,94 +563,72 @@ const saveProfile = async () => {
             </RNView>
           </TouchableOpacity>
 
-          {isInsightSubmitted ? (
-            <RNView style={styles.submittedInsightContainer}>
-              <Text style={styles.submittedInsightText}>{insight}</Text>
-              <RNView style={styles.submittedBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#8A8A82" />
-                <Text style={styles.submittedBadgeText}>今日已封存</Text>
-              </RNView>
-            </RNView>
-          ) : (
-            <>
-              <TextInput
-                style={styles.insightInput}
-                placeholder="此刻的想法..."
-                value={insight}
-                onChangeText={setInsight}
-                multiline
-                placeholderTextColor="#CCC"
-              />
-              <TouchableOpacity style={styles.saveButton} onPress={saveDailyInsight}>
-                <Text style={styles.saveButtonText}>封存今日</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <TextInput
+            style={styles.insightInput}
+            placeholder="此刻的想法..."
+            value={insight}
+            onChangeText={setInsight}
+            multiline
+            placeholderTextColor="#CCC"
+          />
+          <TouchableOpacity style={styles.saveButton} onPress={saveDailyInsight}>
+            <Text style={styles.saveButtonText}>封存今日</Text>
+          </TouchableOpacity>
         </RNView>
 
         {/* Profile Section */}
         <RNView style={styles.section}>
           <RNView style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>ABOUT ME</Text>
-            <TouchableOpacity onPress={() => {isEditingProfile ? (
-  <RNView style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-    <RNView style={{ flex: 1 }}>
-      <Picker
-        selectedValue={birthYear}
-        onValueChange={(v) => setBirthYear(v)}
-        dropdownIconColor="#EEE"
-        style={{ color: '#EEE' }}
-      >
-        {Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, i) => YEAR_MIN + i).map(y => (
-          <Picker.Item key={y} label={`${y}`} value={y} />
-        ))}
-      </Picker>
-    </RNView>
-
-    <RNView style={{ width: 110 }}>
-      <Picker
-        selectedValue={birthMonth}
-        onValueChange={(v) => setBirthMonth(v)}
-        dropdownIconColor="#EEE"
-        style={{ color: '#EEE' }}
-      >
-        {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-          <Picker.Item key={m} label={`${m}月`} value={m} />
-        ))}
-      </Picker>
-    </RNView>
-
-    <RNView style={{ width: 110 }}>
-      <Picker
-        selectedValue={birthDay}
-        onValueChange={(v) => setBirthDay(v)}
-        dropdownIconColor="#EEE"
-        style={{ color: '#EEE' }}
-      >
-        {Array.from({ length: daysInMonth(birthYear, birthMonth) }, (_, i) => i + 1).map(d => (
-          <Picker.Item key={d} label={`${d}日`} value={d} />
-        ))}
-      </Picker>
-    </RNView>
-  </RNView>
-) : (
-  <Text style={styles.profileValue}>{profile.birthDate || '未設置'}</Text>
-)}>
-  <Text style={styles.editButtonText}>{isEditingProfile ? '封存' : '修改'}</Text>
-  </TouchableOpacity>
-         </RNView>
+            <TouchableOpacity onPress={() => isEditingProfile ? saveProfile() : setIsEditingProfile(true)}>
+              <Text style={styles.editButtonText}>{isEditingProfile ? '封存' : '修改'}</Text>
+            </TouchableOpacity>
+          </RNView>
 
           <RNView style={styles.profileContent}>
             <RNView style={styles.profileItem}>
               <Text style={styles.profileLabel}>降生</Text>
               {isEditingProfile ? (
-                <TextInput
-                  style={styles.profileInput}
-                  value={profile.birthDate}
-                  onChangeText={text => setProfile({ ...profile, birthDate: text })}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#EEE"
-                />
+                <RNView style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                  <RNView style={{ flex: 1 }}>
+                    <Picker
+                      selectedValue={birthYear}
+                      onValueChange={(v: number) => setBirthYear(v)}
+                      dropdownIconColor="#000"
+                      style={{ color: '#000' }}
+                    >
+                      {Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, i) => YEAR_MIN + i).map(y => (
+                        <Picker.Item key={y} label={`${y}`} value={y} />
+                      ))}
+                    </Picker>
+                  </RNView>
+
+                  <RNView style={{ width: 100 }}>
+                    <Picker
+                      selectedValue={birthMonth}
+                      onValueChange={(v: number) => setBirthMonth(v)}
+                      dropdownIconColor="#000"
+                      style={{ color: '#000' }}
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                        <Picker.Item key={m} label={`${m}月`} value={m} />
+                      ))}
+                    </Picker>
+                  </RNView>
+
+                  <RNView style={{ width: 100 }}>
+                    <Picker
+                      selectedValue={birthDay}
+                      onValueChange={(v: number) => setBirthDay(v)}
+                      dropdownIconColor="#000"
+                      style={{ color: '#000' }}
+                    >
+                      {Array.from({ length: daysInMonth(birthYear, birthMonth) }, (_, i) => i + 1).map(d => (
+                        <Picker.Item key={d} label={`${d}日`} value={d} />
+                      ))}
+                    </Picker>
+                  </RNView>
+                </RNView>
               ) : (
                 <Text style={styles.profileValue}>{profile.birthDate || '未設置'}</Text>
               )}
@@ -779,31 +755,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: 'bold',
     letterSpacing: 2,
-  },
-  submittedInsightContainer: {
-    paddingVertical: 15,
-    borderLeftWidth: 1,
-    borderLeftColor: '#8A8A82',
-    paddingLeft: 15,
-    backgroundColor: '#F9F9F9',
-    marginTop: 10,
-  },
-  submittedInsightText: {
-    fontSize: 16,
-    color: '#444',
-    lineHeight: 24,
-    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
-  },
-  submittedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 5,
-  },
-  submittedBadgeText: {
-    fontSize: 10,
-    color: '#8A8A82',
-    letterSpacing: 1,
   },
   profileContent: {
     gap: 30,

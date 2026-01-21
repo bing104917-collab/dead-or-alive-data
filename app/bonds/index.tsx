@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { 
   useSharedValue, 
@@ -32,6 +33,8 @@ interface Bond {
 const STORAGE_KEY = 'ikide_bonds_v2';
 const LONG_PRESS_DURATION = 1500;
 const SERIF_FONT = Platform.select({ ios: 'Georgia', android: 'serif' });
+const YEAR_MIN = 1900;
+const YEAR_MAX = 2026;
 
 function BondItem({ 
   item, 
@@ -162,6 +165,29 @@ function BondItem({
   );
 }
 
+function isValidISODate(input: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return { ok: false, msg: '請用 YYYY-MM-DD 格式' };
+  const [yStr, mStr, dStr] = input.split('-');
+  const y = Number(yStr);
+  const m = Number(mStr);
+  const d = Number(dStr);
+  if (m < 1 || m > 12) return { ok: false, msg: '月份需在 01-12' };
+  if (d < 1 || d > 31) return { ok: false, msg: '日期需在 01-31' };
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  const y2 = dt.getUTCFullYear();
+  const m2 = dt.getUTCMonth() + 1;
+  const d2 = dt.getUTCDate();
+  if (y !== y2 || m !== m2 || d !== d2) return { ok: false, msg: '不存在的日期' };
+  const today = new Date();
+  const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  if (dt.getTime() > todayUTC.getTime()) return { ok: false, msg: '降生日期不能晚於今天' };
+  return { ok: true as const };
+}
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const daysInMonth = (y: number, m: number) => new Date(y, m, 0).getDate();
+const birthDateString = (y: number, m: number, d: number) => `${y}-${pad2(m)}-${pad2(d)}`;
+
 export default function BondsPage() {
   const router = useRouter();
   const [bonds, setBonds] = useState<Bond[]>([]);
@@ -175,6 +201,15 @@ export default function BondsPage() {
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
   const [imageUri, setImageUri] = useState<string | undefined>(undefined);
+
+  const [birthYear, setBirthYear] = useState<number>(2000);
+  const [birthMonth, setBirthMonth] = useState<number>(1);
+  const [birthDay, setBirthDay] = useState<number>(1);
+
+  useEffect(() => {
+    const maxD = daysInMonth(birthYear, birthMonth);
+    if (birthDay > maxD) setBirthDay(maxD);
+  }, [birthYear, birthMonth]);
 
   useEffect(() => {
     loadBonds();
@@ -214,11 +249,18 @@ export default function BondsPage() {
   const handleAddOrEdit = () => {
     if (!name.trim()) return Alert.alert('請輸入名字');
     
+    const newDate = birthDateString(birthYear, birthMonth, birthDay);
+    const v = isValidISODate(newDate);
+    if (!v.ok) {
+      Alert.alert('日期無效', v.msg);
+      return;
+    }
+
     const newBond: Bond = {
       id: editingBond?.id || Date.now().toString(),
       name,
       status,
-      date,
+      date: newDate,
       description,
       imageUri,
     };
@@ -261,6 +303,18 @@ export default function BondsPage() {
       setDate(bond.date);
       setDescription(bond.description);
       setImageUri(bond.imageUri);
+
+      // Parse date
+      const m = bond.date?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) {
+        setBirthYear(Number(m[1]));
+        setBirthMonth(Number(m[2]));
+        setBirthDay(Number(m[3]));
+      } else {
+        setBirthYear(2000);
+        setBirthMonth(1);
+        setBirthDay(1);
+      }
     } else {
       setEditingBond(null);
       setName('');
@@ -268,6 +322,9 @@ export default function BondsPage() {
       setDate('');
       setDescription('');
       setImageUri(undefined);
+      setBirthYear(2000);
+      setBirthMonth(1);
+      setBirthDay(1);
     }
     setModalVisible(true);
   };
@@ -355,13 +412,46 @@ export default function BondsPage() {
                 ))}
               </RNView>
 
-              <TextInput
-                style={styles.input}
-                placeholder="降生 (如 1990-01-01)"
-                value={date}
-                onChangeText={setDate}
-                placeholderTextColor="#CCC"
-              />
+              <RNView style={styles.datePickerContainer}>
+                <RNView style={{ flex: 1.5 }}>
+                  <Picker
+                    selectedValue={birthYear}
+                    onValueChange={(v: number) => setBirthYear(v)}
+                    dropdownIconColor="#000"
+                    style={styles.picker}
+                  >
+                    {Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, i) => YEAR_MIN + i).map(y => (
+                      <Picker.Item key={y} label={`${y}`} value={y} />
+                    ))}
+                  </Picker>
+                </RNView>
+
+                <RNView style={{ flex: 1 }}>
+                  <Picker
+                    selectedValue={birthMonth}
+                    onValueChange={(v: number) => setBirthMonth(v)}
+                    dropdownIconColor="#000"
+                    style={styles.picker}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                      <Picker.Item key={m} label={`${m}月`} value={m} />
+                    ))}
+                  </Picker>
+                </RNView>
+
+                <RNView style={{ flex: 1 }}>
+                  <Picker
+                    selectedValue={birthDay}
+                    onValueChange={(v: number) => setBirthDay(v)}
+                    dropdownIconColor="#000"
+                    style={styles.picker}
+                  >
+                    {Array.from({ length: daysInMonth(birthYear, birthMonth) }, (_, i) => i + 1).map(d => (
+                      <Picker.Item key={d} label={`${d}日`} value={d} />
+                    ))}
+                  </Picker>
+                </RNView>
+              </RNView>
 
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -652,7 +742,18 @@ const styles = StyleSheet.create({
   statusContainer: {
     flexDirection: 'row',
     gap: 10,
-    marginVertical: 15,
+    marginBottom: 20,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  picker: {
+    color: '#000',
   },
   statusOption: {
     flex: 1,
