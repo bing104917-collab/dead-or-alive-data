@@ -36,49 +36,68 @@ export const useCelebrityData = () => {
   }, []);
 
   const loadData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // --- 強制清除舊緩存 (防止 App 記住舊的 3 人名單) ---
-      // 只要成功抓到一次新數據，之後可以把這行註釋掉
-      await AsyncStorage.removeItem(CACHE_KEY); 
-      // -----------------------------------------------
+  try {
+    setIsLoading(true);
 
-      console.log("Fetching from:", API_URL);
-      // 加一個隨機數防止瀏覽器/網路層緩存
-      const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
-      
-      if (response.ok) {
-        const rawData: RawCelebrity[] = await response.json();
-        
-        // 關鍵：把縮寫 (n, s) 翻譯成全名 (name, status)
-        const mappedData: Celebrity[] = rawData.map((item) => ({
-          id: item.id,
-          name: item.n,
-          status: item.s === 'd' ? 'dead' : 'alive',
-          birthDate: item.b,
-          deathDate: item.d || null,
-          image: item.i || null,
-          occupation: item.o || 'Unknown',
-        }));
-
-        console.log(`✅ Success! Loaded ${mappedData.length} celebrities.`);
-        
-        setData(mappedData);
-        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(mappedData));
-      } else {
-        throw new Error('Network response was not ok');
-      }
-    } catch (error) {
-      console.log('Error fetching data, checking cache:', error);
-      const cached = await AsyncStorage.getItem(CACHE_KEY);
-      if (cached) {
-        setData(JSON.parse(cached));
-      }
-    } finally {
-      setIsLoading(false);
+    // ✅ 1) 缓存优先：先读缓存，立刻显示
+    const cached = await AsyncStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const parsed: Celebrity[] = JSON.parse(cached);
+        if (parsed?.length) {
+          setData(parsed);
+          setIsLoading(false); // 有缓存先关 loading
+        }
+      } catch {}
     }
-  };
+
+    console.log("Fetching from:", API_URL);
+
+    // ✅ 2) fetch 超时
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    const response = await fetch(`${API_URL}?t=${Date.now()}`, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const rawData: RawCelebrity[] = await response.json();
+
+      const mappedData: Celebrity[] = rawData.map((item) => ({
+        id: item.id,
+        name: item.n,
+        status: item.s === 'd' ? 'dead' : 'alive',
+        birthDate: item.b ?? 'Unknown',     // 顺手防空
+        deathDate: item.d || null,
+        image: item.i || null,
+        occupation: item.o || 'Unknown',
+      }));
+
+      console.log(`✅ Success! Loaded ${mappedData.length} celebrities.`);
+
+      setData(mappedData);
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(mappedData));
+    } else {
+      // 建议把错误信息打印更详细
+      const text = await response.text().catch(() => '');
+      throw new Error(`HTTP ${response.status} ${response.statusText} | ${text.slice(0, 120)}`);
+    }
+  } catch (error) {
+    console.log('Error fetching data, checking cache:', error);
+
+    // ✅ 3) 网络失败就回退缓存（如果上面已经读过缓存，这里只是兜底）
+    const cached = await AsyncStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try { setData(JSON.parse(cached)); } catch {}
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return { data, isLoading, refetch: loadData };
 };
