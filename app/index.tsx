@@ -32,15 +32,53 @@ const MONO_FONT = Platform.select({
   web: 'monospace',
 });
 
-function FloatingItem({ children, delay = 0, duration = 3000, offset = 10, style, parallaxStyle }: { children: React.ReactNode, delay?: number, duration?: number, offset?: number, style?: any, parallaxStyle?: any }) {
+const navItems = [
+  {
+    title: '眾 生',
+    subtitle: 'THE MULTITUDE',
+    path: '/celebrities',
+    description: '歷史長河中的芸芸眾生',
+    style: { alignSelf: 'flex-start', marginLeft: 20, marginTop: 40 } as const,
+    fontSize: 42,
+    delay: 0,
+  },
+  {
+    title: '羈 絆',
+    subtitle: 'BONDS',
+    path: '/bonds',
+    description: '與我產生深刻聯繫的個體',
+    style: { alignSelf: 'flex-end', marginRight: 40, marginTop: 20 } as const,
+    fontSize: 36,
+    delay: 500,
+  },
+  {
+    title: '專 注',
+    subtitle: 'G A Z E',
+    path: '/focus',
+    description: '凝視時間的流逝',
+    style: { alignSelf: 'flex-start', marginLeft: 30, marginTop: 40 } as const,
+    fontSize: 40,
+    delay: 1000,
+  },
+  {
+    title: '獨 白',
+    subtitle: 'MONOLOGUE',
+    path: '/monologue',
+    description: '與內心自我的對話',
+    style: { alignSelf: 'flex-end', marginRight: 20, marginTop: 30 } as const,
+    fontSize: 48,
+    delay: 1500,
+  },
+];
+
+const FloatingItem = React.memo(({ children, delay = 0, duration = 3000, offset = 10, style, parallaxStyle }: { children: React.ReactNode, delay?: number, duration?: number, offset?: number, style?: any, parallaxStyle?: any }) => {
   const translateY = useSharedValue(0);
   const { gravityScale } = useGlobalSettings();
 
   useEffect(() => {
     // Adjust the offset and duration based on gravityScale
-    // Higher gravity = more movement (larger offset) and faster movement (shorter duration)
     const adjustedOffset = offset * gravityScale;
-    const adjustedDuration = duration / (0.5 + gravityScale * 0.5); // Gravity 1 = normal, Gravity 10 = ~2x faster
+    const adjustedDuration = duration / (0.5 + gravityScale * 0.5);
 
     translateY.value = withDelay(
       delay,
@@ -59,15 +97,56 @@ function FloatingItem({ children, delay = 0, duration = 3000, offset = 10, style
     transform: [{ translateY: translateY.value }],
   }));
 
- return (
-    <Animated.View style={[style, parallaxStyle]}> {}
-      {}
-      <Animated.View style={floatingStyle}> {}
+  return (
+    <Animated.View style={[style, parallaxStyle]}>
+      <Animated.View style={floatingStyle}>
         {children}
       </Animated.View>
     </Animated.View>
   );
-}
+});
+
+const NavButton = React.memo(({ item, wireframeMode, onPress }: { item: any, wireframeMode: boolean, onPress: () => void }) => {
+  const opacity = useSharedValue(1);
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    opacity.value = withTiming(0.6, { duration: 100 });
+    scale.value = withTiming(0.98, { duration: 100 });
+  };
+
+  const handlePressOut = () => {
+    opacity.value = withTiming(1, { duration: 150 });
+    scale.value = withTiming(1, { duration: 150 });
+  };
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
+      <Animated.View
+        style={[
+          styles.menuItem,
+          wireframeMode && { borderWidth: 1, borderColor: '#000', borderStyle: 'dashed' },
+          animatedStyle
+        ]}
+      >
+        <RNView style={styles.menuItemContent}>
+          <Text style={[styles.menuItemTitle, { fontSize: item.fontSize }]}>{item.title}</Text>
+          <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+          <Text style={styles.menuItemDesc}>{item.description}</Text>
+        </RNView>
+      </Animated.View>
+    </Pressable>
+  );
+});
 
 export default function LandingPage() {
   const router = useRouter();
@@ -211,45 +290,6 @@ export default function LandingPage() {
     }
   };
 
-  const navItems = [
-    {
-      title: '眾 生',
-      subtitle: 'THE MULTITUDE',
-      path: '/celebrities',
-      description: '歷史長河中的芸芸眾生',
-      style: { alignSelf: 'flex-start', marginLeft: 20, marginTop: 40 } as const,
-      fontSize: 42,
-      delay: 0,
-    },
-    {
-      title: '羈 絆',
-      subtitle: 'BONDS',
-      path: '/bonds',
-      description: '與我產生深刻聯繫的個體',
-      style: { alignSelf: 'flex-end', marginRight: 40, marginTop: 20 } as const,
-      fontSize: 36,
-      delay: 500,
-    },
-    {
-      title: '專 注',
-      subtitle: 'G A Z E',
-      path: '/focus',
-      description: '凝視時間的流逝',
-      style: { alignSelf: 'flex-start', marginLeft: 30, marginTop: 40 } as const,
-      fontSize: 40,
-      delay: 1000,
-    },
-    {
-      title: '獨 白',
-      subtitle: 'MONOLOGUE',
-      path: '/monologue',
-      description: '與內心自我的對話',
-      style: { alignSelf: 'flex-end', marginRight: 20, marginTop: 30 } as const,
-      fontSize: 48,
-      delay: 1500,
-    },
-  ];
-
   return (
     <Pressable 
       style={{ flex: 1 }}
@@ -279,39 +319,33 @@ export default function LandingPage() {
                 style={item.style}
                 parallaxStyle={menuParallax}
               >
-                <TouchableOpacity
-                  style={[
-                    styles.menuItem,
-                    wireframeMode && { borderWidth: 1, borderColor: '#000', borderStyle: 'dashed' }
-                  ]}
-                  onPress={() => router.push(item.path as any)}
-                  activeOpacity={0.6}
-                >
-                  <RNView style={styles.menuItemContent}>
-                    <Text style={[styles.menuItemTitle, { fontSize: item.fontSize }]}>{item.title}</Text>
-                    <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
-                    <Text style={styles.menuItemDesc}>{item.description}</Text>
-                  </RNView>
-                </TouchableOpacity>
+                <NavButton 
+                  item={item} 
+                  wireframeMode={wireframeMode} 
+                  onPress={() => router.push(item.path as any)} 
+                />
               </FloatingItem>
             ))}
           </RNView>
 
-          <TouchableOpacity 
+          <Pressable 
             style={styles.footer} 
             onPress={() => setShowCountdown(true)}
-            activeOpacity={0.8}
           >
-            {showCountdown ? (
-              <Animated.View entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
-                <Text style={styles.countdownText}>{remainingTime}</Text>
-              </Animated.View>
-            ) : (
-              <Animated.View entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
-                <Text style={styles.footerText}>MOMENTO MORI</Text>
-              </Animated.View>
+            {({ pressed }) => (
+              <RNView style={{ opacity: pressed ? 0.6 : 1 }}>
+                {showCountdown ? (
+                  <Animated.View key="countdown" entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
+                    <Text style={styles.countdownText}>{remainingTime}</Text>
+                  </Animated.View>
+                ) : (
+                  <Animated.View key="label" entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
+                    <Text style={styles.footerText}>MOMENTO MORI</Text>
+                  </Animated.View>
+                )}
+              </RNView>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </SafeAreaView>
       </Animated.View>
     </Pressable>

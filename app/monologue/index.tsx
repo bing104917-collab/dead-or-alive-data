@@ -609,7 +609,7 @@ export default function MonologuePage() {
           </RNView>
           
           <TouchableOpacity 
-            style={styles.quoteCard} 
+            style={[styles.quoteCard, !isRevealed && styles.quoteCardSealed]} 
             activeOpacity={0.9}
             onPress={handleReveal}
           >

@@ -46,33 +46,24 @@ export function useParallax(sensitivity = 1, maxOffset = 15) {
     Gyroscope.setUpdateInterval(16); // ~60fps for smooth motion
 
     const subscription = Gyroscope.addListener((data) => {
-      // We use the rotation rate to influence the current offset
-      // data.y is rotation around Y axis (left/right tilt) -> influences translateX
-      // data.x is rotation around X axis (up/down tilt) -> influences translateY
-      
       // Sensitivity multiplier influenced by Global Gravity Scale
       const dx = data.y * sensitivity * gravityScale;
       const dy = data.x * sensitivity * gravityScale;
 
-      // Update shared values with a damping effect
-      rotationX.value = Math.max(Math.min(rotationX.value + dx, 10), -10);
-      rotationY.value = Math.max(Math.min(rotationY.value + dy, 10), -10);
+      // Update shared values directly
+      // We use a small decay factor (0.97) here to slowly drift back to center
+      rotationX.value = Math.max(Math.min((rotationX.value + dx) * 0.97, 10), -10);
+      rotationY.value = Math.max(Math.min((rotationY.value + dy) * 0.97, 10), -10);
     });
-
-    // Slow return to center when not moving
-    const interval = setInterval(() => {
-      rotationX.value = rotationX.value * 0.95;
-      rotationY.value = rotationY.value * 0.95;
-    }, 16);
 
     return () => {
       subscription.remove();
-      clearInterval(interval);
     };
   }, [sensitivity, gravityScale]);
 
   const animatedStyle = useAnimatedStyle(() => {
     // Map the accumulated rotation to the desired pixel offset
+    // Apply withSpring here for smooth visual movement
     const translateX = withSpring(
       interpolate(
         rotationX.value,
