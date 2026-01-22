@@ -59,9 +59,12 @@ function FloatingItem({ children, delay = 0, duration = 3000, offset = 10, style
     transform: [{ translateY: translateY.value }],
   }));
 
-  return (
-    <Animated.View style={[style, parallaxStyle, floatingStyle]}>
-      {children}
+ return (
+    <Animated.View style={[style, parallaxStyle]}> {}
+      {}
+      <Animated.View style={floatingStyle}> {}
+        {children}
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -149,6 +152,7 @@ export default function LandingPage() {
   };
 
   const stopHeartbeat = () => {
+    if (!isHeartbeating) return; 
     setIsHeartbeating(false);
     heartbeatAnim.value = withTiming(0, { duration: 300 });
     if (heartbeatIntervalRef.current) {
