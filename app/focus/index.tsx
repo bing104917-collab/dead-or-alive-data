@@ -265,13 +265,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingBottom: 80,
+    paddingTop:40,
   },
   presetContainer: {
     flexDirection: 'row',
-    marginBottom: 60,
+    marginBottom: 40,
     gap: 30,
   },
   dimmed: {
