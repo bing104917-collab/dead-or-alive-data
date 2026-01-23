@@ -1,86 +1,164 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, FlatList, SafeAreaView, View as RNView, Platform } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, TouchableOpacity, SectionList, SafeAreaView, View as RNView, Platform, Animated, useWindowDimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusHistory } from '@/hooks/useFocusHistory';
 import { FocusSession } from '@/types/FocusSession';
+import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function FocusHistoryPage() {
   const router = useRouter();
   const { getSessions, isLoading, deleteSession } = useFocusHistory();
   const sessions = getSessions();
+  const { width, height, fontScale } = useWindowDimensions();
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    if (mins > 0) return `${mins} 分 ${secs} 秒`;
-    return `${secs} 秒`;
-  };
+  // Dynamic scaling factors
+  const isSmallScreen = width < 375; // iPhone SE size
+  const scale = isSmallScreen ? 0.9 : 1;
 
-  const formatDate = (dateString: string) => {
+  // Helper: Format date for headers
+  const formatDateHeader = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('zh-TW', {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const sessionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    if (sessionDate.getTime() === today.getTime()) return '今日';
+    if (sessionDate.getTime() === yesterday.getTime()) return '昨日';
+    
+    return date.toLocaleDateString('zh-TW', {
       year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
-  const handleDelete = async (id: string) => {
-    if (deleteSession) {
-      await deleteSession(id);
-    }
+  // Helper: Format time for items
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('zh-TW', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
   };
 
-  const renderItem = ({ item }: { item: FocusSession }) => (
-    <TouchableOpacity 
-      style={styles.card} 
-      onLongPress={() => handleDelete(item.id)}
-      activeOpacity={0.7}
-    >
-      <RNView style={styles.cardHeader}>
-        <Text style={styles.dateText}>{formatDate(item.startTime)}</Text>
-        <Text style={styles.durationText}>{formatDuration(item.duration)}</Text>
-      </RNView>
-      {item.userNote ? (
-        <Text style={styles.noteText}>{item.userNote}</Text>
-      ) : (
-        <Text style={styles.noNoteText}>無感悟紀錄</Text>
-      )}
-    </TouchableOpacity>
-  );
+  // Helper: Format duration
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    
+    if (mins === 0) return `${secs}s`;
+    return `${mins}m ${secs > 0 ? `${secs}s` : ''}`;
+  };
+
+  // Grouping logic
+  const groupedSessions = useMemo(() => {
+    const groups: { [key: string]: FocusSession[] } = {};
+    sessions.forEach(session => {
+      const header = formatDateHeader(session.startTime);
+      if (!groups[header]) {
+        groups[header] = [];
+      }
+      groups[header].push(session);
+    });
+
+    return Object.keys(groups).map(header => ({
+      title: header,
+      data: groups[header],
+    }));
+  }, [sessions]);
+
+  const renderRightActions = (id: string, progress: Animated.AnimatedInterpolation<number>) => {
+    const trans = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [80, 0],
+    });
+    return (
+      <TouchableOpacity 
+        style={styles.deleteAction} 
+        onPress={() => deleteSession(id)}
+      >
+        <Animated.View style={{ transform: [{ translateX: trans }] }}>
+          <Ionicons name="trash-outline" size={24} color="#FFF" />
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderItem = ({ item, index, section }: { item: FocusSession, index: number, section: any }) => {
+    const isLast = index === section.data.length - 1;
+
+    return (
+      <Swipeable
+        renderRightActions={(progress) => renderRightActions(item.id, progress)}
+        friction={2}
+        rightThreshold={40}
+        containerStyle={styles.swipeableContainer}
+      >
+        <RNView style={[styles.timelineItem, { minHeight: 80 * scale }]}>
+          <RNView style={[styles.leftColumn, { width: 60 * scale }]}>
+            <Text style={[styles.timeText, { fontSize: 12 * scale }]}>{formatTime(item.startTime)}</Text>
+            <RNView style={styles.connectorContainer}>
+              <RNView style={[styles.dot, { width: 6 * scale, height: 6 * scale, borderRadius: 3 * scale }]} />
+              {!isLast && <RNView style={styles.line} />}
+            </RNView>
+          </RNView>
+
+          <RNView style={[styles.contentColumn, { paddingLeft: 10 * scale }]}>
+            <Text style={[styles.durationText, { 
+              fontSize: 28 * scale, 
+              lineHeight: 34 * scale 
+            }]}>{formatDuration(item.duration)}</Text>
+            {item.userNote ? (
+              <RNView style={styles.noteCard}>
+                <Ionicons name="chatbubble-ellipses-outline" size={12 * scale} color="#DDD" style={styles.quoteIcon} />
+                <Text style={[styles.noteText, { fontSize: 14 * scale, lineHeight: 20 * scale }]}>{item.userNote}</Text>
+              </RNView>
+            ) : null}
+          </RNView>
+        </RNView>
+      </Swipeable>
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ 
-        title: '專 注 歷 史',
-        headerTitleStyle: styles.headerTitle,
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: '#F5F5F0' },
-        headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
-          </TouchableOpacity>
-        ),
-      }} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{ 
+          title: '專注歷史',
+          headerTitleStyle: styles.headerTitle,
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: '#F5F5F0' },
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }}>
+              <Ionicons name="close-outline" size={28} color="#333" />
+            </TouchableOpacity>
+          ),
+        }} />
 
-      <FlatList
-        data={sessions}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <RNView style={styles.emptyContainer}>
-            <Ionicons name="leaf-outline" size={48} color="#DDD" />
-            <Text style={styles.emptyText}>尚無專注紀錄</Text>
-            <Text style={styles.emptySubtext}>每一次專注都是與內心的對話</Text>
-          </RNView>
-        }
-      />
-    </SafeAreaView>
+        <SectionList
+          sections={groupedSessions}
+          keyExtractor={item => item.id}
+          contentContainerStyle={[styles.listContent, { paddingHorizontal: 20 * scale }]}
+          stickySectionHeadersEnabled={false}
+          style={{ flex: 1 }}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={[styles.sectionHeader, { fontSize: 14 * scale }]}>{title}</Text>
+          )}
+          renderItem={renderItem}
+          ListEmptyComponent={
+            <RNView style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>時間之河尚未流動...</Text>
+            </RNView>
+          }
+        />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -90,70 +168,104 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F0',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '300',
-    letterSpacing: 4,
+    letterSpacing: 2,
     fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
   },
   listContent: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 40,
   },
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#F0F0F0',
-    paddingBottom: 8,
-  },
-  dateText: {
-    fontSize: 12,
+  sectionHeader: {
+    fontSize: 14,
     color: '#999',
+    marginTop: 24,
+    marginBottom: 16,
+    letterSpacing: 1,
     fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    minHeight: 80,
+    backgroundColor: '#F5F5F0',
+  },
+  swipeableContainer: {
+    marginBottom: 0,
+  },
+  leftColumn: {
+    width: 60,
+    alignItems: 'center',
+  },
+  timeText: {
+    fontSize: 12,
+    color: '#BBB',
+    marginBottom: 8,
+  },
+  connectorContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#DDD',
+  },
+  line: {
+    flex: 1,
+    width: 1,
+    backgroundColor: '#EEE',
+    marginVertical: 4,
+  },
+  contentColumn: {
+    flex: 1,
+    paddingLeft: 10,
+    paddingBottom: 24,
   },
   durationText: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: 28,
+    color: '#444',
+    fontWeight: '300',
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
+    marginTop: 0,
+    lineHeight: 34,
+  },
+  noteCard: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    borderLeftWidth: 2,
+    borderLeftColor: '#EEE',
+  },
+  quoteIcon: {
+    marginBottom: 4,
   },
   noteText: {
-    fontSize: 15,
-    color: '#333',
-    lineHeight: 22,
-    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
-  },
-  noNoteText: {
     fontSize: 14,
-    color: '#CCC',
+    color: '#666',
+    lineHeight: 20,
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
     fontStyle: 'italic',
   },
-  emptyContainer: {
-    marginTop: 100,
-    alignItems: 'center',
+  deleteAction: {
+    backgroundColor: '#FF5252',
     justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    alignSelf: 'stretch',
+  },
+  emptyContainer: {
+    marginTop: 120,
+    alignItems: 'center',
   },
   emptyText: {
-    fontSize: 18,
-    color: '#999',
-    marginTop: 16,
-    letterSpacing: 2,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#CCC',
-    marginTop: 8,
+    fontSize: 16,
+    color: '#BBB',
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif' }),
+    fontStyle: 'italic',
   },
 });

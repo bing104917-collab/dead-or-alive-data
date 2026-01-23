@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StyleSheet, SafeAreaView, View as RNView, Platform, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, SafeAreaView, View as RNView, Platform, TouchableOpacity, Alert, useWindowDimensions } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
@@ -19,6 +19,9 @@ const DURATIONS = [
 
 export default function FocusScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isSmallScreen = width < 375;
+  const scale = isSmallScreen ? 0.85 : 1;
   
   // States
   const [selectedDuration, setSelectedDuration] = useState(25); // in minutes
@@ -133,22 +136,21 @@ export default function FocusScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      
-      {/* Header */}
+      <Stack.Screen options={{ 
+        headerShown: false,
+      }} />
       <RNView style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>G A Z E</Text>
         <TouchableOpacity onPress={() => router.push('/focus/history')} style={styles.historyButton}>
-           <Ionicons name="time-outline" size={24} color="#333" />
+          <Ionicons name="time-outline" size={24} color="#333" />
         </TouchableOpacity>
       </RNView>
 
-      <RNView style={styles.content}>
-        {/* Preset Selection */}
-        <RNView style={[styles.presetContainer, isRunning && styles.dimmed]}>
+      <RNView style={[styles.content, { paddingTop: 40 * scale, paddingBottom: 80 * scale }]}>
+        <RNView style={[styles.presetContainer, isRunning && styles.dimmed, { marginBottom: 40 * scale, gap: 30 * scale }]}>
           {DURATIONS.map((d) => (
             <TouchableOpacity 
               key={d.label} 
@@ -159,7 +161,8 @@ export default function FocusScreen() {
               <Text style={[
                 styles.presetText, 
                 (selectedDuration === d.value && d.value !== 0) && styles.presetTextActive,
-                (isCustomMode && d.value === 0) && styles.presetTextActive
+                (isCustomMode && d.value === 0) && styles.presetTextActive,
+                { fontSize: 16 * scale }
               ]}>
                 {d.label}
               </Text>
@@ -167,10 +170,9 @@ export default function FocusScreen() {
           ))}
         </RNView>
 
-        {/* Custom Duration Slider */}
         {isCustomMode && (
-          <RNView style={[styles.customSliderContainer, isRunning && styles.dimmed]}>
-            <Text style={styles.customDurationText}>{customDuration} 分鐘</Text>
+          <RNView style={[styles.customSliderContainer, isRunning && styles.dimmed, { marginBottom: 40 * scale }]}>
+            <Text style={[styles.customDurationText, { fontSize: 16 * scale }]}>{customDuration} 分鐘</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -186,20 +188,30 @@ export default function FocusScreen() {
           </RNView>
         )}
 
-        {/* Timer Display with Breathing Circle */}
-        <RNView style={styles.timerContainer}>
+        <RNView style={[styles.timerContainer, { 
+          marginBottom: isCustomMode ? 40 * scale : 80 * scale,
+          width: 300 * scale, 
+          height: 300 * scale 
+        }]}>
           <BreathingCircle isRunning={isRunning} />
-          <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
+          <Text style={[styles.timerText, { fontSize: 88 * scale }]}>{formatTime(timeLeft)}</Text>
         </RNView>
 
-        {/* Controls */}
-        <RNView style={styles.controlsContainer}>
+        <RNView style={[styles.controlsContainer, { gap: 20 * scale }]}>
           <TouchableOpacity 
-            style={[styles.mainButton, isRunning ? styles.mainButtonRunning : styles.mainButtonPaused]} 
+            style={[
+              styles.mainButton, 
+              isRunning ? styles.mainButtonRunning : styles.mainButtonPaused,
+              { width: 140 * scale, height: 140 * scale, borderRadius: 70 * scale }
+            ]} 
             onPress={toggleTimer}
             activeOpacity={0.8}
           >
-            <Text style={[styles.mainButtonText, isRunning ? styles.mainButtonTextRunning : styles.mainButtonTextPaused]}>
+            <Text style={[
+              styles.mainButtonText, 
+              isRunning ? styles.mainButtonTextRunning : styles.mainButtonTextPaused,
+              { fontSize: 18 * scale }
+            ]}>
               {isRunning ? 'PAUSE' : 'START'}
             </Text>
           </TouchableOpacity>

@@ -24,13 +24,11 @@ export function MirrorView() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
     if (Platform.OS === 'web') {
-      Alert.alert(
-        "歸去",
-        "世界正在門外守候。放下螢幕，去生活吧。",
-        [{ text: "好" }]
-      );
-    } else {
-      Alert.alert(
+      window.alert("歸去\n\n世界正在門外守候。放下螢幕，去生活吧。");
+      return;
+    }
+
+    Alert.alert(
         "重返現實",
         "故事還在繼續。你準備好去書寫自己的篇章了嗎？",
         [
@@ -51,7 +49,6 @@ export function MirrorView() {
           }
         ]
       );
-    }
   };
 
   return (
