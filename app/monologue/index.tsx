@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, SafeAreaView, View as RNView, TextInput, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, SafeAreaView, View as RNView , TextInput, ScrollView, Alert, Platform } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Stack, useRouter } from 'expo-router';
 import { Text } from '@/components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { findSimilarQuotes, SimilarQuote } from '@/utils/localSimilar';
 
 interface UserProfile {
   birthDate: string;
@@ -332,6 +333,9 @@ const PRESET_INSIGHTS = [
 
 export default function MonologuePage() {
   const router = useRouter();
+  const [similarQuotes, setSimilarQuotes] = useState<SimilarQuote[]>([]);
+  const [loadingQuote, setLoadingQuote] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile>({ birthDate: '' });
   const [insight, setInsight] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -345,6 +349,26 @@ export default function MonologuePage() {
   const [timeLeft, setTimeLeft] = useState(600);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<any>(null);
+
+  const loadSimilarQuote = async (text: string) => {
+    const cleaned = text.trim();
+    if (cleaned.length < 4) {
+      setSimilarQuotes([]);
+      setQuoteError(null);
+      return;
+    }
+    try {
+      setLoadingQuote(true);
+      setQuoteError(null);
+      const res = await findSimilarQuotes(cleaned, 3, 0.25);
+      setSimilarQuotes(res);
+    } catch (e) {
+      setQuoteError('智能名言暫不可用');
+      setSimilarQuotes([]);
+    } finally {
+      setLoadingQuote(false);
+    }
+  };
 
   function isValidISODate(input: string) {
   // 1) 格式 YYYY-MM-DD
@@ -470,9 +494,11 @@ export default function MonologuePage() {
       const storedInsights = await AsyncStorage.getItem(INSIGHTS_KEY);
       if (storedInsights) {
         const insights: DailyInsight[] = JSON.parse(storedInsights);
-        // 不再自動加載今日感悟到輸入框，保持初始化為空白
-        // const todayInsight = insights.find(i => i.date === today);
-        // if (todayInsight) setInsight(todayInsight.content);
+        const todayInsight = insights.find(i => i.date === today);
+        if (todayInsight) {
+          setInsight(todayInsight.content);
+          await loadSimilarQuote(todayInsight.content);
+        }
       }
     } catch (e) {
       console.error('Failed to load profile data');
@@ -567,6 +593,7 @@ export default function MonologuePage() {
       insights.push({ date: now, content: insight });
 
       await AsyncStorage.setItem(INSIGHTS_KEY, JSON.stringify(insights));
+      await loadSimilarQuote(insight);
       
       // 清空輸入框
       setInsight('');
@@ -681,6 +708,18 @@ export default function MonologuePage() {
           >
             <Text style={styles.saveButtonText}>封 存 此 刻</Text>
           </TouchableOpacity>
+          {loadingQuote ? (
+            <Text style={{ marginTop: 10, color: '#999' }}>正在匹配相似名言...</Text>
+          ) : quoteError ? (
+            <Text style={{ marginTop: 10, color: '#c00' }}>{quoteError}</Text>
+          ) : similarQuotes.length ? (
+            <RNView style={{ marginTop: 12 }}>
+              <Text style={{ color: '#555', fontStyle: 'italic' }}>最匹配的名言：</Text>
+              <Text style={{ marginTop: 6, color: '#555', fontStyle: 'italic' }}>
+                {`${similarQuotes[0].text}  (相似度 ${(similarQuotes[0].score * 100).toFixed(2)}%)`}
+              </Text>
+            </RNView>
+          ) : null}
         </RNView>
 
         {/* Profile Section */}
