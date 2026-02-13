@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -18,9 +18,6 @@ import Animated, {
   withSequence,
   withDelay,
   Easing,
-  FadeIn,
-  FadeOut,
-  runOnJS,
 } from 'react-native-reanimated';
 import Slider from '@react-native-community/slider';
 import { useGlobalSettings } from '@/context/GlobalSettings';
@@ -49,7 +46,14 @@ interface Particle {
 
 export default function VoidTerminal() {
   const router = useRouter();
-  const { gravityScale, setGravityScale, wireframeMode, setWireframeMode } = useGlobalSettings();
+  const {
+    gravityScale,
+    setGravityScale,
+    wireframeMode,
+    setWireframeMode,
+    similarityEnabled,
+    setSimilarityEnabled,
+  } = useGlobalSettings();
   const [particles, setParticles] = useState<Particle[]>([]);
   const cursorOpacity = useSharedValue(1);
 
@@ -68,14 +72,13 @@ export default function VoidTerminal() {
   const spawnParticle = (x: number, y: number) => {
     const id = Date.now();
     const name = CONTRIBUTORS[Math.floor(Math.random() * CONTRIBUTORS.length)];
-    
-    // Add random drift and scale for more "beautiful" movement
-    const driftX = (Math.random() - 0.5) * 60; // Random horizontal drift
-    const driftY = -50 - Math.random() * 50;   // Always drift upwards
-    const scale = 0.8 + Math.random() * 0.4;  // Random scale
-    
+
+    const driftX = (Math.random() - 0.5) * 60;
+    const driftY = -50 - Math.random() * 50;
+    const scale = 0.8 + Math.random() * 0.4;
+
     const newParticle = { id, name, x, y, driftX, driftY, scale };
-    setParticles((prev) => [...prev.slice(-15), newParticle]); // Keep max 15 particles
+    setParticles((prev) => [...prev.slice(-15), newParticle]);
 
     setTimeout(() => {
       setParticles((prev) => prev.filter((p) => p.id !== id));
@@ -127,12 +130,21 @@ export default function VoidTerminal() {
             thumbColor={wireframeMode ? '#FFF' : '#666'}
           />
         </View>
+        <View style={styles.controlRow}>
+          <Text style={styles.label}>封存相似度檢查</Text>
+          <Switch
+            value={similarityEnabled}
+            onValueChange={setSimilarityEnabled}
+            trackColor={{ false: '#333', true: '#00FF00' }}
+            thumbColor={similarityEnabled ? '#FFF' : '#666'}
+          />
+        </View>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>[ 客體名冊 ]</Text>
         <Pressable onPress={handleTouch} style={styles.voidArea}>
-          <Text style={styles.voidPlaceholder}>此處無物，唯有迴響 (點擊喚醒)</Text>
+          <Text style={styles.voidPlaceholder}>此處無物，唯有迴響（點擊喚醒）</Text>
           {particles.map((p) => (
             <ParticleView key={p.id} particle={p} />
           ))}
@@ -140,7 +152,7 @@ export default function VoidTerminal() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>浮生錄 ． 虛空內核</Text>
+        <Text style={styles.footerText}>浮生錄，虛空內核</Text>
         <Text style={styles.footerText}>一切終將歸於寂靜</Text>
       </View>
     </View>
@@ -201,7 +213,7 @@ const styles = StyleSheet.create({
   terminalText: {
     color: '#00FF00',
     fontSize: 18,
-    fontFamily: 'SpaceMono-Regular', // Use available mono font
+    fontFamily: 'SpaceMono-Regular',
   },
   closeButton: {
     padding: 5,
