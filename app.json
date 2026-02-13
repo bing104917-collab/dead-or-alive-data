@@ -35,7 +35,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    extra": {
+    "extra": {
       "router": {},
       "eas": {
       }
