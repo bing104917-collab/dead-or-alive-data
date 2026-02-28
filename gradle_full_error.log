@@ -1,0 +1,460 @@
+Initialized native services in: C:\Users\19046\.gradle\native
+Initialized jansi services in: C:\Users\19046\.gradle\native
+The client will now receive all logging from the daemon (pid: 5432). The daemon log file: C:\Users\19046\.gradle\daemon\8.14.3\daemon-5432.out.log
+Starting 2nd build in daemon [uptime: 19 mins 5.532 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 2 GiB, non-heap usage: 42% of 512 MiB]
+Using 8 worker leases.
+Now considering [D:\codes\others\dead-or-alive-data-main\android, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-core\expo-module-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Starting process 'command 'node''. Working directory: D:\codes\others\dead-or-alive-data-main\android Command: node --print require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })
+Successfully started process 'command 'node''
+Starting process 'command 'node''. Working directory: D:\codes\others\dead-or-alive-data-main\android Command: node --print require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })
+Successfully started process 'command 'node''
+Now considering [D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin, D:\codes\others\dead-or-alive-data-main\android, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-core\expo-module-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin] as hierarchies to watch
+Resolved plugin [id: 'org.gradle.toolchains.foojay-resolver-convention', version: '0.5.0']
+Now considering [D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin, D:\codes\others\dead-or-alive-data-main\android, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-core\expo-module-gradle-plugin] as hierarchies to watch
+
+> Configure project :gradle-plugin
+Evaluating project ':gradle-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20', apply: false]
+
+> Configure project :gradle-plugin:react-native-gradle-plugin
+Evaluating project ':gradle-plugin:react-native-gradle-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin\react-native-gradle-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20']
+Resolved plugin [id: 'java-gradle-plugin']
+Build dacdacf4-cbd1-46c7-82c8-7f39b47fefa3 is started
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+
+> Configure project :gradle-plugin:settings-plugin
+Evaluating project ':gradle-plugin:settings-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin\settings-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20']
+Resolved plugin [id: 'java-gradle-plugin']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+
+> Configure project :gradle-plugin:shared
+Evaluating project ':gradle-plugin:shared' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin\shared\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+
+> Configure project :gradle-plugin:shared-testutil
+Evaluating project ':gradle-plugin:shared-testutil' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin\shared-testutil\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Resolved plugin [id: 'com.facebook.react.settings']
+
+> Configure project :expo-gradle-plugin
+Evaluating project ':expo-gradle-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20', apply: false]
+Resolved plugin [id: 'java-gradle-plugin']
+
+> Configure project :expo-gradle-plugin:expo-autolinking-plugin
+Evaluating project ':expo-gradle-plugin:expo-autolinking-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin\expo-autolinking-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm']
+Resolved plugin [id: 'java-gradle-plugin']
+Build 6655b449-f7fb-47c5-8a63-68c3963163dd is started
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+
+> Configure project :expo-gradle-plugin:expo-autolinking-plugin-shared
+Evaluating project ':expo-gradle-plugin:expo-autolinking-plugin-shared' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin\expo-autolinking-plugin-shared\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm']
+Resolved plugin [id: 'org.jetbrains.kotlin.plugin.serialization', version: '1.9.24']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+
+> Configure project :expo-gradle-plugin:expo-autolinking-settings-plugin
+Evaluating project ':expo-gradle-plugin:expo-autolinking-settings-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin\expo-autolinking-settings-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm']
+Resolved plugin [id: 'java-gradle-plugin']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Resolved plugin [id: 'expo-autolinking-settings']
+Resolve mutations for :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#295,included builds Thread 2,5,main]) started.
+Resolve mutations for :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors (Thread[#296,Execution worker,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#294,included builds,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors (Thread[#298,Execution worker Thread 3,5,main]) started.
+:gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#295,included builds Thread 2,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors (Thread[#298,Execution worker Thread 3,5,main]) started.
+:gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors (Thread[#296,Execution worker,5,main]) started.
+
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :gradle-plugin:shared:compileKotlin (Thread[#295,included builds Thread 2,5,main]) started.
+Resolve mutations for :gradle-plugin:settings-plugin:pluginDescriptors (Thread[#296,Execution worker,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin (Thread[#298,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors (Thread[#301,Execution worker Thread 6,5,main]) started.
+:gradle-plugin:settings-plugin:pluginDescriptors (Thread[#296,Execution worker,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors (Thread[#301,Execution worker Thread 6,5,main]) started.
+:gradle-plugin:shared:compileKotlin (Thread[#295,included builds Thread 2,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors' as it is up-to-date.
+
+> Task :gradle-plugin:settings-plugin:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':gradle-plugin:settings-plugin:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:settings-plugin:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources (Thread[#299,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :gradle-plugin:settings-plugin:processResources (Thread[#296,Execution worker,5,main]) started.
+:gradle-plugin:settings-plugin:processResources (Thread[#296,Execution worker,5,main]) started.
+
+> Task :gradle-plugin:settings-plugin:processResources UP-TO-DATE
+Caching disabled for task ':gradle-plugin:settings-plugin:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:settings-plugin:processResources' as it is up-to-date.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:processResources (Thread[#299,Execution worker Thread 4,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-settings-plugin:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:processResources' as it is up-to-date.
+
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+Caching disabled for task ':gradle-plugin:shared:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':gradle-plugin:shared:compileKotlin' as it is up-to-date.
+Resolve mutations for :gradle-plugin:shared:compileJava (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:shared:compileJava (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+Skipping task ':gradle-plugin:shared:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle-plugin:shared:processResources (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:shared:processResources (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+Skipping task ':gradle-plugin:shared:processResources' as it has no source files and no previous output files.
+Resolve mutations for :gradle-plugin:shared:classes (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:shared:classes (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+Skipping task ':gradle-plugin:shared:classes' as it has no actions.
+Resolve mutations for :gradle-plugin:shared:jar (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:shared:jar (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin' as it is up-to-date.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin-shared:processResources (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+Caching disabled for task ':gradle-plugin:shared:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:shared:jar' as it is up-to-date.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin-shared:processResources' as it has no source files and no previous output files.
+work action resolve shared.jar (project :gradle-plugin:shared) (Thread[#295,included builds Thread 2,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin-shared:classes (Thread[#298,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :gradle-plugin:settings-plugin:compileKotlin (Thread[#295,included builds Thread 2,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin-shared:classes (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin-shared:classes' as it has no actions.
+:gradle-plugin:settings-plugin:compileKotlin (Thread[#295,included builds Thread 2,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin-shared:jar (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin-shared:jar (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-plugin-shared:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin-shared:jar' as it is up-to-date.
+work action resolve expo-autolinking-plugin-shared-1.0.jar (project :expo-gradle-plugin:expo-autolinking-plugin-shared) (Thread[#298,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :gradle-plugin:settings-plugin:compileKotlin UP-TO-DATE
+Caching disabled for task ':gradle-plugin:settings-plugin:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':gradle-plugin:settings-plugin:compileKotlin' as it is up-to-date.
+Resolve mutations for :gradle-plugin:settings-plugin:compileJava (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:settings-plugin:compileJava (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+Skipping task ':gradle-plugin:settings-plugin:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle-plugin:settings-plugin:classes (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:settings-plugin:classes (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :gradle-plugin:settings-plugin:classes UP-TO-DATE
+Skipping task ':gradle-plugin:settings-plugin:classes' as it has no actions.
+Resolve mutations for :gradle-plugin:settings-plugin:jar (Thread[#295,included builds Thread 2,5,main]) started.
+:gradle-plugin:settings-plugin:jar (Thread[#295,included builds Thread 2,5,main]) started.
+
+> Task :gradle-plugin:settings-plugin:jar UP-TO-DATE
+Caching disabled for task ':gradle-plugin:settings-plugin:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:settings-plugin:jar' as it is up-to-date.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin' as it is up-to-date.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava NO-SOURCE
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:classes (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:classes (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:classes UP-TO-DATE
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:classes' as it has no actions.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-settings-plugin:jar (Thread[#298,Execution worker Thread 3,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-settings-plugin:jar (Thread[#298,Execution worker Thread 3,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:jar UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-settings-plugin:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-settings-plugin:jar' as it is up-to-date.
+Starting process 'command 'node''. Working directory: D:\codes\others\dead-or-alive-data-main\android Command: node --print require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })
+Successfully started process 'command 'node''
+Starting process 'command 'cmd''. Working directory: D:\codes\others\dead-or-alive-data-main\android Command: cmd /c node --no-warnings --eval require('expo/bin/autolinking') expo-modules-autolinking resolve --platform android --json
+Successfully started process 'command 'cmd''
+Starting process 'command 'node''. Working directory: D:\codes\others\dead-or-alive-data-main\android Command: node --print require.resolve('react-native/package.json')
+Successfully started process 'command 'node''
+Starting process 'command 'node''. Working directory: D:\codes\others\dead-or-alive-data-main\android Command: node --print require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })
+Successfully started process 'command 'node''
+Settings evaluated using settings file 'D:\codes\others\dead-or-alive-data-main\android\settings.gradle'.
+Now considering [D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-core\expo-module-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin, D:\codes\others\dead-or-alive-data-main\android] as hierarchies to watch
+Projects loaded. Root project using build file 'D:\codes\others\dead-or-alive-data-main\android\build.gradle'.
+Included projects: [root project 'ikide-new', project ':app', project ':expo', project ':expo-constants', project ':expo-modules-core', project ':onnxruntime-react-native', project ':react-native-async-storage_async-storage', project ':react-native-community_slider', project ':react-native-gesture-handler', project ':react-native-picker_picker', project ':react-native-reanimated', project ':react-native-safe-area-context', project ':react-native-screens', project ':react-native-worklets']
+Registering project ':expo-gradle-plugin' in composite build. Will substitute for module ':expo-gradle-plugin'.
+Registering project ':expo-gradle-plugin:expo-autolinking-plugin' in composite build. Will substitute for module 'expo.modules:expo-autolinking-plugin'.
+Registering project ':expo-gradle-plugin:expo-autolinking-plugin-shared' in composite build. Will substitute for module 'expo.modules:expo-autolinking-plugin-shared'.
+Registering project ':expo-gradle-plugin:expo-autolinking-settings-plugin' in composite build. Will substitute for module 'expo.modules:expo-autolinking-settings-plugin'.
+
+> Configure project :expo-module-gradle-plugin
+Evaluating project ':expo-module-gradle-plugin' using build file 'D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-core\expo-module-gradle-plugin\build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.1.20']
+Resolved plugin [id: 'java-gradle-plugin']
+Build 9e03d9e0-8fe1-47ba-844a-28d32c53837e is started
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Registering project ':expo-module-gradle-plugin' in composite build. Will substitute for module 'expo.modules:expo-module-gradle-plugin'.
+Registering project ':gradle-plugin' in composite build. Will substitute for module ':gradle-plugin-root'.
+Registering project ':gradle-plugin:react-native-gradle-plugin' in composite build. Will substitute for module 'com.facebook.react:react-native-gradle-plugin'.
+Registering project ':gradle-plugin:settings-plugin' in composite build. Will substitute for module 'com.facebook.react:settings-plugin'.
+Registering project ':gradle-plugin:shared' in composite build. Will substitute for module 'com.facebook.react:shared'.
+Registering project ':gradle-plugin:shared-testutil' in composite build. Will substitute for module 'com.facebook.react:shared-testutil'.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#301,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#299,Execution worker Thread 4,5,main]) started.
+work action resolve expo-autolinking-plugin-shared-1.0.jar (project :expo-gradle-plugin:expo-autolinking-plugin-shared) (Thread[#296,Execution worker,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#299,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#300,Execution worker Thread 5,5,main]) started.
+:gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:compileKotlin (Thread[#302,Execution worker Thread 7,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:compileKotlin (Thread[#301,Execution worker Thread 6,5,main]) started.
+:gradle-plugin:react-native-gradle-plugin:compileKotlin (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :expo-module-gradle-plugin:pluginDescriptors (Thread[#299,Execution worker Thread 4,5,main]) started.
+:expo-module-gradle-plugin:pluginDescriptors (Thread[#299,Execution worker Thread 4,5,main]) started.
+
+> Task :expo-module-gradle-plugin:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':expo-module-gradle-plugin:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-module-gradle-plugin:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :expo-module-gradle-plugin:processResources (Thread[#299,Execution worker Thread 4,5,main]) started.
+:expo-module-gradle-plugin:processResources (Thread[#300,Execution worker Thread 5,5,main]) started.
+
+> Task :expo-module-gradle-plugin:processResources UP-TO-DATE
+Caching disabled for task ':expo-module-gradle-plugin:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-module-gradle-plugin:processResources' as it is up-to-date.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-plugin:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:compileKotlin' as it is up-to-date.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:compileJava (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:compileJava (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileJava NO-SOURCE
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:processResources (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+Caching disabled for task ':gradle-plugin:react-native-gradle-plugin:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':gradle-plugin:react-native-gradle-plugin:compileKotlin' as it is up-to-date.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:compileJava (Thread[#302,Execution worker Thread 7,5,main]) started.
+other build task :gradle-plugin:react-native-gradle-plugin:compileKotlin (Thread[#300,Execution worker Thread 5,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:processResources (Thread[#301,Execution worker Thread 6,5,main]) started.
+:gradle-plugin:react-native-gradle-plugin:compileJava (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+Skipping task ':gradle-plugin:react-native-gradle-plugin:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:pluginDescriptors (Thread[#302,Execution worker Thread 7,5,main]) started.
+other build task :gradle-plugin:react-native-gradle-plugin:compileJava (Thread[#300,Execution worker Thread 5,5,main]) started.
+:gradle-plugin:react-native-gradle-plugin:pluginDescriptors (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:processResources UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-plugin:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:processResources' as it is up-to-date.
+
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':gradle-plugin:react-native-gradle-plugin:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:react-native-gradle-plugin:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:classes (Thread[#301,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:processResources (Thread[#302,Execution worker Thread 7,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:classes (Thread[#301,Execution worker Thread 6,5,main]) started.
+:gradle-plugin:react-native-gradle-plugin:processResources (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:classes UP-TO-DATE
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:classes' as it has no actions.
+Resolve mutations for :expo-gradle-plugin:expo-autolinking-plugin:jar (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-gradle-plugin:expo-autolinking-plugin:jar (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+Caching disabled for task ':gradle-plugin:react-native-gradle-plugin:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:react-native-gradle-plugin:processResources' as it is up-to-date.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:classes (Thread[#302,Execution worker Thread 7,5,main]) started.
+:gradle-plugin:react-native-gradle-plugin:classes (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+Skipping task ':gradle-plugin:react-native-gradle-plugin:classes' as it has no actions.
+Resolve mutations for :gradle-plugin:react-native-gradle-plugin:jar (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:jar UP-TO-DATE
+Caching disabled for task ':expo-gradle-plugin:expo-autolinking-plugin:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-gradle-plugin:expo-autolinking-plugin:jar' as it is up-to-date.
+:gradle-plugin:react-native-gradle-plugin:jar (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+Caching disabled for task ':gradle-plugin:react-native-gradle-plugin:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle-plugin:react-native-gradle-plugin:jar' as it is up-to-date.
+work action resolve main (project :gradle-plugin:react-native-gradle-plugin) (Thread[#302,Execution worker Thread 7,5,main]) started.
+work action resolve main (project :gradle-plugin:react-native-gradle-plugin) (Thread[#302,Execution worker Thread 7,5,main]) started.
+Resolve mutations for :expo-module-gradle-plugin:compileKotlin (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-module-gradle-plugin:compileKotlin (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :expo-module-gradle-plugin:compileKotlin UP-TO-DATE
+Caching disabled for task ':expo-module-gradle-plugin:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':expo-module-gradle-plugin:compileKotlin' as it is up-to-date.
+Resolve mutations for :expo-module-gradle-plugin:compileJava (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-module-gradle-plugin:compileJava (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :expo-module-gradle-plugin:compileJava NO-SOURCE
+Skipping task ':expo-module-gradle-plugin:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :expo-module-gradle-plugin:classes (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-module-gradle-plugin:classes (Thread[#301,Execution worker Thread 6,5,main]) started.
+
+> Task :expo-module-gradle-plugin:classes UP-TO-DATE
+Skipping task ':expo-module-gradle-plugin:classes' as it has no actions.
+Resolve mutations for :expo-module-gradle-plugin:jar (Thread[#301,Execution worker Thread 6,5,main]) started.
+:expo-module-gradle-plugin:jar (Thread[#302,Execution worker Thread 7,5,main]) started.
+
+> Task :expo-module-gradle-plugin:jar UP-TO-DATE
+Caching disabled for task ':expo-module-gradle-plugin:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':expo-module-gradle-plugin:jar' as it is up-to-date.
+
+> Configure project :app
+Evaluating project ':app' using build file 'D:\codes\others\dead-or-alive-data-main\android\app\build.gradle'.
+Using default execution profile
+Build 4232d652-2185-4da8-94fd-2c4db05b3e09 is started
+Using Kotlin Gradle Plugin gradle85 variant
+
+> Configure project :
+Evaluating root project 'ikide-new' using build file 'D:\codes\others\dead-or-alive-data-main\android\build.gradle'.
+Found project 'project :expo-gradle-plugin:expo-autolinking-plugin' as substitute for module 'expo.modules:expo-autolinking-plugin'.
+Found project 'project :expo-module-gradle-plugin' as substitute for module 'expo.modules:expo-module-gradle-plugin'.
+Found project 'project :gradle-plugin:react-native-gradle-plugin' as substitute for module 'com.facebook.react:react-native-gradle-plugin'.
+Found project 'project :expo-gradle-plugin:expo-autolinking-plugin-shared' as substitute for module 'expo.modules:expo-autolinking-plugin-shared'.
+Found project 'project :gradle-plugin:react-native-gradle-plugin' as substitute for module 'com.facebook.react:react-native-gradle-plugin'.
+Found project 'project :expo-gradle-plugin:expo-autolinking-plugin-shared' as substitute for module 'expo.modules:expo-autolinking-plugin-shared'.
+Ignoring listeners of task graph ready event, as this build (:expo-gradle-plugin) has already executed work.
+Ignoring listeners of task graph ready event, as this build (:gradle-plugin) has already executed work.
+[32m[ExpoRootProject][0m Using the following versions:
+  - buildTools:  [32m36.0.0[0m
+  - minSdk:      [32m24[0m
+  - compileSdk:  [32m36[0m
+  - targetSdk:   [32m36[0m
+  - ndk:         [32m27.1.12297006[0m
+  - kotlin:      [32m2.1.20[0m
+  - ksp:         [32m2.1.20-2.0.1[0m
+Build 6655b449-f7fb-47c5-8a63-68c3963163dd is closed
+Build 9e03d9e0-8fe1-47ba-844a-28d32c53837e is closed
+Build dacdacf4-cbd1-46c7-82c8-7f39b47fefa3 is closed
+Build 4232d652-2185-4da8-94fd-2c4db05b3e09 is closed
+
+[Incubating] Problems report is available at: file:///D:/codes/others/dead-or-alive-data-main/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+24 actionable tasks: 24 up-to-date
+Watched directory hierarchies: [D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-core\expo-module-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\expo-modules-autolinking\android\expo-gradle-plugin, D:\codes\others\dead-or-alive-data-main\node_modules\@react-native\gradle-plugin]
