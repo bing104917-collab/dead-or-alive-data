@@ -243,6 +243,8 @@ export default function VoidTerminal() {
     setWireframeMode,
     similarityEnabled,
     setSimilarityEnabled,
+    petSkinMode,
+    setPetSkinMode,
   } = useGlobalSettings();
 
   const cursorOpacity = useSharedValue(1);
@@ -366,6 +368,18 @@ export default function VoidTerminal() {
                 />
               </View>
             </View>
+
+            <View style={styles.controlRow}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>PET 换皮肤模式</Text>
+                <Switch
+                  value={petSkinMode}
+                  onValueChange={setPetSkinMode}
+                  trackColor={{ false: '#113311', true: '#00FF00' }}
+                  thumbColor={petSkinMode ? '#FFF' : '#666'}
+                />
+              </View>
+            </View>
           </View>
 
           <View
@@ -382,6 +396,9 @@ export default function VoidTerminal() {
             </Text>
             <Text style={styles.statusText}>
               SIMILARITY_CHECK: {similarityEnabled ? 'ENABLED' : 'SEALED'}
+            </Text>
+            <Text style={styles.statusText}>
+              PET_SKIN_MODE: {petSkinMode ? 'FISH_TANK' : 'DEFAULT'}
             </Text>
           </View>
         </View>

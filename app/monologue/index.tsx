@@ -813,6 +813,17 @@ export default function MonologuePage() {
           </RNView>
         </RNView>
 
+        {/* Company Pet Button Section */}
+        <RNView style={styles.section}>
+          <TouchableOpacity 
+            style={styles.petButton} 
+            onPress={() => router.push('/companyPet')}
+          >
+            <Ionicons name="paw-outline" size={24} color="#FFF" />
+            <Text style={styles.petButtonText}>進入桌寵空間</Text>
+          </TouchableOpacity>
+        </RNView>
+
         <RNView style={styles.footer}>
           <Text style={styles.footerText}>在時間的流逝中，留下一點痕跡。</Text>
         </RNView>
@@ -1054,5 +1065,20 @@ const styles = StyleSheet.create({
     color: '#999',
     width: 60,
     textAlign: 'right',
+  },
+  petButton: {
+    backgroundColor: '#121212',
+    flexDirection: 'row',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  petButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 2,
   },
 });
