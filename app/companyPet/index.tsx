@@ -3,7 +3,7 @@ import { Image as RNImage, Platform, Pressable, SafeAreaView, StyleSheet, useWin
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Image as ExpoImage } from 'expo-image';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -52,11 +52,12 @@ const TITLE_FONT = Platform.select({
   web: 'Georgia, serif',
 });
 
-const BAMBOO_IMG = require('@/assets/companyPet/bamboo.png');
-const ROCK_IMG = require('@/assets/companyPet/rock.png');
-const DROPLET_IMG = require('@/assets/companyPet/droplet.png');
+const BAMBOO_IMG = require('../../assets/companyPet/bamboo.png');
+const ROCK_IMG = require('../../assets/companyPet/rock.png');
+const DROPLET_IMG = require('../../assets/companyPet/droplet.png');
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedNativeImage = Animated.createAnimatedComponent(RNImage);
 
 const WaterStreamSvg = React.memo(
@@ -103,32 +104,26 @@ const WaterStreamSvg = React.memo(
       }
     }, [mode]);
 
-    const getPath = (offset: number = 0, curve: number = 0.5) => {
-      const midX = startX + dx * curve + offset;
+    const mainProps = useAnimatedProps(() => {
+      'worklet';
+      const midX = startX + dx * 0.45 + turbulence.value * 3;
       const midY = startY + dy * 0.5;
-      return `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
-    };
+      return {
+        d: `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`,
+        strokeWidth: (mode === 'heavy' ? 18 : 10) + pulse.value * 2,
+      };
+    });
 
-    const mainProps = useAnimatedProps(() => ({
-      d: getPath(turbulence.value * 3, 0.45),
-      strokeWidth: (mode === 'heavy' ? 18 : 10) + pulse.value * 2,
-    }));
-
-    const innerProps = useAnimatedProps(() => ({
-      d: getPath(-turbulence.value * 2, 0.55),
-      strokeWidth: (mode === 'heavy' ? 8 : 4) + pulse.value,
-      strokeDashoffset: dashOffset1.value,
-    }));
-
-    const highlightProps = useAnimatedProps(() => ({
-      d: getPath(turbulence.value * 4, 0.5),
-      strokeDashoffset: dashOffset2.value,
-    }));
-
-    const rapidProps = useAnimatedProps(() => ({
-      d: getPath(-turbulence.value * 3, 0.48),
-      strokeDashoffset: dashOffset3.value,
-    }));
+    const innerProps = useAnimatedProps(() => {
+      'worklet';
+      const midX = startX + dx * 0.55 - turbulence.value * 2;
+      const midY = startY + dy * 0.5;
+      return {
+        d: `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`,
+        strokeWidth: (mode === 'heavy' ? 8 : 4) + pulse.value,
+        strokeDashoffset: dashOffset1.value,
+      };
+    });
 
     if (mode === 'none') return null;
 
@@ -142,52 +137,20 @@ const WaterStreamSvg = React.memo(
           fill="none"
         />
         
-        {/* Layer 2: Main Cohesive Stream - Braided look */}
+        {/* Layer 2: Main Cohesive Stream */}
         <AnimatedPath
           animatedProps={innerProps}
-          stroke="rgba(255, 255, 255, 0.75)"
+          stroke="rgba(255, 255, 255, 0.7)"
           strokeWidth={mode === 'heavy' ? 4 : 2.5}
           strokeLinecap="round"
           fill="none"
           strokeDasharray="80 15"
         />
 
-        {/* Layer 3: Intertwined Flow - Semi-transparent blue */}
-        <AnimatedPath
-          animatedProps={highlightProps}
-          stroke="rgba(127, 194, 255, 0.45)"
-          strokeWidth={mode === 'heavy' ? 10 : 6}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray="50 30"
-        />
-
-        {/* Layer 4: Glistening Highlights - Rapid white streaks */}
-        <AnimatedPath
-          animatedProps={rapidProps}
-          stroke="#ffffff"
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray="10 120"
-          opacity={0.9}
-        />
-
-        {/* Layer 5: Occasional "Light catching" beads */}
-        <AnimatedPath
-          animatedProps={innerProps}
-          stroke="#ffffff"
-          strokeWidth={3}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray="2 200"
-          opacity={0.8}
-        />
-
-        {/* Impact Splash - SVG circles at endX, endY */}
+        {/* Impact Splash - Optimized for memory */}
         {mode === 'heavy' && (
-           <Animated.Circle
-             cx={endX + (turbulence.value - 0.5) * 15}
+           <AnimatedCircle
+             cx={endX}
              cy={endY - 5}
              r={8 + pulse.value * 4}
              fill="rgba(255, 255, 255, 0.4)"
@@ -228,7 +191,7 @@ const Droplet = React.memo(({ data, onComplete }: { data: DropletData; onComplet
       opacity = 0.8 + 0.2 * p;
     } else {
       const p = (progress.value - phase1End) / (1 - phase1End);
-      const easedP = Easing.in(Easing.quad)(p);
+      const easedP = p * p;
       // Parabolic fall
       x = data.midX + (data.endX - data.midX) * easedP;
       y = data.midY + (data.endY - data.midY) * easedP;
@@ -266,12 +229,9 @@ export default function CompanyPet() {
   const { petSkinMode } = useGlobalSettings();
   const { recordClick } = useWaterDropMemory();
   const [count, setCount] = useState(0);
+  const MAX_DROPLETS = 30; // Define a maximum number of droplets to prevent excessive memory usage
   const [droplets, setDroplets] = useState<DropletData[]>([]);
   const [streamMode, setStreamMode] = useState<StreamMode>('none');
-
-  if (petSkinMode) {
-    return <FishSkin />;
-  }
 
   const idRef = useRef(1);
   const tapTimesRef = useRef<number[]>([]);
@@ -344,7 +304,13 @@ export default function CompanyPet() {
       duration: 550 + Math.random() * 250, // total duration
       rotation: (Math.random() - 0.5) * 10,
     };
-    setDroplets((prev) => [...prev, data]);
+    setDroplets((prev) => {
+      const newDroplets = [...prev, data];
+      if (newDroplets.length > MAX_DROPLETS) {
+        return newDroplets.slice(newDroplets.length - MAX_DROPLETS); // Keep only the newest droplets
+      }
+      return newDroplets;
+    });
   }, [layout.innerX, layout.innerY, layout.rockCenterX, layout.rockImpactY, layout.rockWidth, layout.spoutX, layout.spoutY]);
 
   const handleDropletComplete = useCallback((id: number) => {
@@ -374,6 +340,10 @@ export default function CompanyPet() {
       if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
     };
   }, []);
+
+  if (petSkinMode) {
+    return <FishSkin />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -535,3 +505,4 @@ const styles = StyleSheet.create({
     top: 0,
   },
 });
+
