@@ -1,7 +1,5 @@
 ﻿import { Asset } from 'expo-asset';
-import quoteTexts from '@/components/data/quote_texts.json';
-import quoteVectors from '@/components/data/quote_vectors.json';
-import { encodeText } from '@/utils/bertTokenizer';
+import { encodeText } from './bertTokenizer';
 
 export interface SimilarQuote {
   text: string;
@@ -12,14 +10,13 @@ type Vec = number[];
 
 type OrtModule = typeof import('onnxruntime-react-native');
 
-const TEXTS: string[] = quoteTexts as unknown as string[];
-const VECTORS: Vec[] = quoteVectors as unknown as Vec[];
-
 let ortPromise: Promise<OrtModule> | null = null;
 let sessionPromise: Promise<import('onnxruntime-react-native').InferenceSession> | null = null;
+let ALL_VECTORS_CACHE: Vec[] = [];
+let ALL_TEXTS_CACHE: string[] = [];
 
 //使用ONNX 模型 → 生成句向量
-const MODEL_ASSET = require('@/assets/models/sbert/model.onnx');
+const MODEL_ASSET = require('../assets/models/sbert/model.onnx');
 
 //和本地 quoteVectors 做余弦相似度
 function cosine(a: Vec, b: Vec): number {
@@ -64,26 +61,38 @@ async function getOrt(): Promise<OrtModule> {
 }
 
 async function getSession() {
-  if (sessionPromise) return sessionPromise;
+  if (sessionPromise) {
+    return sessionPromise;
+  }
+
   sessionPromise = (async () => {
+    if (ALL_VECTORS_CACHE.length === 0 || ALL_TEXTS_CACHE.length === 0) {
+      const rawQuoteTexts: string[] = require('../components/data/quote_texts.json');
+      const rawQuoteVectors: number[][] = require('../components/data/quote_vectors.json');
+      ALL_TEXTS_CACHE = rawQuoteTexts;
+      ALL_VECTORS_CACHE = rawQuoteVectors as unknown as Vec[];
+    }
+
     const ort = await getOrt();
     const asset = Asset.fromModule(MODEL_ASSET);
+
     try {
       if (!asset.localUri) {
         await asset.downloadAsync();
       }
     } catch (error) {
-      const err = new Error('model asset missing');
+      const err = new Error('model asset missing or failed to download');
       (err as any).code = 'MODEL_MISSING';
       throw err;
     }
     const uri = asset.localUri || asset.uri;
     if (!uri) {
-      const err = new Error('model asset missing');
+      const err = new Error('model asset missing URI');
       (err as any).code = 'MODEL_MISSING';
       throw err;
     }
-    return ort.InferenceSession.create(uri);
+    const session = await ort.InferenceSession.create(uri);
+    return session;
   })();
   return sessionPromise;
 }
@@ -99,7 +108,8 @@ function isBadQuoteText(s: unknown): boolean {
 export function isMeaningfulText(input: string): boolean {
   const t = input.trim();
   if (t.length < 4) return false;
-  if (/^[\W_]+$/u.test(t)) return false;
+  const hasWordLike = /[A-Za-z0-9]/.test(t) || /[\u3400-\u9fff]/u.test(t);
+  if (!hasWordLike) return false;
   const unique = new Set(t.replace(/\s+/g, '').split(''));
   if (unique.size <= 2 && t.length >= 8) return false;
   return true;
@@ -131,18 +141,20 @@ async function embed(text: string): Promise<Vec> {
 
 export async function findSimilarQuotes(
   userText: string,
-  topK = 3,//取最相似的3条
+  topK = 3,
   minScore = 0.25
 ): Promise<SimilarQuote[]> {
   if (!isMeaningfulText(userText)) return [];
 
+  await getSession(); // Ensure session is ready and database is initialized/cached
+
   const q = await embed(userText.trim());
-  const scores = VECTORS.map((v, idx) => ({ idx, score: cosine(q, v) }));
+  const scores = ALL_VECTORS_CACHE.map((v, idx) => ({ idx, score: cosine(q, v) }));
   scores.sort((a, b) => b.score - a.score);
 
   const candidates = scores
     .filter((r) => r.score >= minScore)
-    .map((r) => ({ text: TEXTS[r.idx], score: r.score }))
+    .map((r) => ({ text: ALL_TEXTS_CACHE[r.idx], score: r.score }))
     .filter((x) => !isBadQuoteText(x.text));
 
   return candidates.slice(0, topK);
